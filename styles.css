@@ -1,0 +1,100 @@
+:root {
+  --bg: #f7f7fb;
+  --card: #ffffff;
+  --text: #1a1a1a;
+  --muted: #6b6b6b;
+  --primary: #2f6fed;
+  --primary-weak: #e6eeff;
+  --success: #077e51;
+  --error: #b60c0c;
+  --border: #e5e7eb;
+}
+
+/* Mode sombre automatique */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --card: #1e1e1e;
+    --text: #717171;
+    --muted: #aaaaaa;
+    --primary: #4a90e2;
+    --primary-weak: #2a3b5f;
+    --success: #077e51;
+    --error: #b60c0c;
+    --border: #333333;
+  }
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.header{padding:2rem 1.5rem;text-align:center}
+.container{max-width:900px;margin:0 auto;padding:1rem}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem}
+.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem;align-items:end}
+.setting label{display:block;margin-bottom:.4rem;color:var(--muted)}
+select{width:100%;padding:.6rem;border:1px solid var(--border);border-radius:8px;background:#fff}
+.btn{padding:.6rem .9rem;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.ghost{background:transparent}
+.status{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.6rem;color:var(--muted)}
+.question{font-size:1.4rem;font-weight:600;margin:.6rem 0 1rem}
+.choices{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.choice{border:1px solid var(--border);border-radius:10px;padding:.7rem;background:#fff;cursor:pointer}
+.choice:hover{background:var(--primary-weak)}
+.choice.correct{border-color:var(--success);background:#077e51}
+.choice.wrong{border-color:var(--error);background:#b60c0c}
+.controls{display:flex;gap:.6rem;margin-top:.8rem}
+.feedback{min-height:1.2rem;margin-top:.6rem;color:var(--muted)}
+progress{width:100%;height:10px;margin-top:.8rem}
+.footer{padding:2rem;text-align:center;color:var(--muted)}
+.hidden{display:none}
+
+/* Styles spécifiques mobile */
+@media (max-width: 600px) {
+  body {
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 0;
+  }
+
+  .header h1 {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+  }
+
+  .question {
+    font-size: 1.2rem;
+    text-align: center;
+  }
+
+  .choices {
+    gap: 1rem;
+  }
+
+  .choice {
+    padding: 1rem;
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .status {
+    flex-direction: column;
+    gap: 0.4rem;
+    text-align: center;
+  }
+
+  progress {
+    height: 14px;
+    border-radius: 8px;
+  }
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ALBANIS – FRANÇAIS Quiz</title>
+  <meta name="description" content="Quiz de vocabulaire albanais–français, choix multiple, score et progression." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <h1>ALBANIS – FRANÇAIS Quiz</h1>
+    <p>Teste ton vocabulaire, des bases aux thèmes du quotidien.</p>
+  </header>
+
+  <main class="container">
+    <!-- Paramètres -->
+    <section class="panel settings">
+      <div class="setting">
+        <label for="direction"><strong>Direction:</strong></label>
+        <select id="direction">
+          <option value="sq-fr">Albanais → Français</option>
+          <option value="fr-sq">Français → Albanais</option>
+        </select>
+      </div>
+      <div class="setting">
+        <label for="category"><strong>Catégorie:</strong></label>
+        <select id="category">
+          <option value="all">Toutes</option>
+          <option value="bases">Bases</option>
+          <option value="salutations">Salutations</option>
+          <option value="nombres">Nombres</option>
+          <option value="couleurs">Couleurs</option>
+          <option value="famille">Famille</option>
+          <option value="nourriture">Nourriture</option>
+          <option value="temps">Temps</option>
+        </select>
+      </div>
+      <div class="setting">
+        <label for="difficulty"><strong>Difficulté:</strong></label>
+        <select id="difficulty">
+          <option value="easy">Facile (3 choix)</option>
+          <option value="medium">Moyen (4 choix)</option>
+          <option value="hard">Difficile (5 choix)</option>
+        </select>
+      </div>
+      <button id="startBtn" class="btn primary">Commencer</button>
+    </section>
+
+    <!-- Jeu -->
+    <section class="panel game hidden" id="gamePanel">
+      <div class="status">
+        <div><strong>Question:</strong> <span id="qIndex">0</span>/<span id="qTotal">10</span></div>
+        <div><strong>Score:</strong> <span id="score">0</span></div>
+        <div><strong>Meilleur:</strong> <span id="best">0</span></div>
+      </div>
+      <div class="question" id="questionText">…</div>
+      <ul class="choices" id="choices"></ul>
+      <div class="controls">
+        <button id="nextBtn" class="btn">Suivant</button>
+        <button id="skipBtn" class="btn ghost">Passer</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <progress id="progress" value="0" max="10"></progress>
+    </section>
+
+    <!-- Résultats -->
+    <section class="panel results hidden" id="resultsPanel">
+      <h2>Bravo !</h2>
+      <p><strong>Ton score:</strong> <span id="finalScore">0</span>/<span id="finalTotal">10</span></p>
+      <p id="bestMsg"></p>
+      <button id="restartBtn" class="btn primary">Rejouer</button>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small>© 2025 Quiz Albanais–Français</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
