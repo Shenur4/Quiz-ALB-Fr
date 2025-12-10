@@ -15,10 +15,10 @@
   :root {
     --bg: #121212;
     --card: #1e1e1e;
-    --text: #717171;
+    --text: #ffffff;
     --muted: #aaaaaa;
-    --primary: #4a90e2;
-    --primary-weak: #2a3b5f;
+    --primary: #ce2828;
+    --primary-weak: #0bac00;
     --success: #077e51;
     --error: #b60c0c;
     --border: #333333;
