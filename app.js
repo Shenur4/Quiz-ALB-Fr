@@ -5,6 +5,15 @@ const VOCAB = [
   // Bases
   { sq: "po", fr: "oui", cat: "bases" },
   { sq: "jo", fr: "non", cat: "bases" },
+  { sq: "ndoshta", fr: "peut-être", cat: "bases" },
+  { sq: "mirë", fr: "bien", cat: "bases" },
+  { sq: "keq", fr: "mal", cat: "bases" },
+  { sq: "mësoj", fr: "apprendre", cat: "bases" },
+  { sq: "kuptoj", fr: "comprendre", cat: "bases" },
+  { sq: "flas", fr: "parler", cat: "bases" },
+  { sq: "shkruaj", fr: "écrire", cat: "bases" },
+  { sq: "lexoj", fr: "lire", cat: "bases" },
+  { sq: "mut", fr: "caca", cat: "bases" },
 
   // Salutations
   { sq: "ju lutem", fr: "s'il vous plaît", cat: "salutations" },
@@ -12,7 +21,9 @@ const VOCAB = [
   { sq: "faleminderit", fr: "merci", cat: "salutations" },
   { sq: "përshëndetje", fr: "bonjour", cat: "salutations" },
   { sq: "mirupafshim", fr: "au revoir", cat: "salutations" },
-
+  { sq: "më fal", fr: "excusez-moi", cat: "salutations" },
+  { sq: "si jeni?", fr: "comment ça va?", cat: "salutations" },
+  
   // Nombres
   { sq: "një", fr: "un", cat: "nombres" },
   { sq: "dy", fr: "deux", cat: "nombres" },
@@ -20,19 +31,34 @@ const VOCAB = [
   { sq: "katër", fr: "quatre", cat: "nombres" },
   { sq: "pesë", fr: "cinq", cat: "nombres" },
   { sq: "gjashtë", fr: "six", cat: "nombres" },
+  { sq: "shtatë", fr: "sept", cat: "nombres" },
+  { sq: "tetë", fr: "huit", cat: "nombres" },
+  { sq: "nëntë", fr: "neuf", cat: "nombres" },
+  { sq: "dhjetë", fr: "dix", cat: "nombres" },
 
   // Couleurs
-  { sq: "i kuq", fr: "rouge", cat: "couleurs" },
-  { sq: "i bardhë", fr: "blanc", cat: "couleurs" },
-  { sq: "i zi", fr: "noir", cat: "couleurs" },
+  { sq: "kuq", fr: "rouge", cat: "couleurs" },
+  { sq: "bardhë", fr: "blanc", cat: "couleurs" },
+  { sq: "zezë", fr: "noir", cat: "couleurs" },
   { sq: "mavi", fr: "bleu", cat: "couleurs" },
   { sq: "jeshile", fr: "vert", cat: "couleurs" },
+  { sq: "sari", fr: "jaune", cat: "couleurs" },
+  { sq: "portokall", fr: "orange", cat: "couleurs" },
+  { sq: "pembe", fr: "rose", cat: "couleurs" },
+  { sq: "kaft", fr: "marron", cat: "couleurs" },
+  { sq: "përhift", fr: "gris", cat: "couleurs" },
 
   // Famille
   { sq: "nënë", fr: "mère", cat: "famille" },
   { sq: "babë", fr: "père", cat: "famille" },
   { sq: "vëlla", fr: "frère", cat: "famille" },
   { sq: "motër", fr: "sœur", cat: "famille" },
+  { sq: "gjysh", fr: "grand-père", cat: "famille" },
+  { sq: "gjyshe", fr: "grand-mère", cat: "famille" },
+  { sq: "djalë", fr: "fils", cat: "famille" },
+  { sq: "vajzë", fr: "fille", cat: "famille" },
+  { sq: "bashkëshort", fr: "mari", cat: "famille" },
+  { sq: "bashkëshorte", fr: "femme", cat: "famille" },
 
   // Nourriture
   { sq: "bukë", fr: "pain", cat: "nourriture" },
@@ -40,13 +66,23 @@ const VOCAB = [
   { sq: "mish", fr: "viande", cat: "nourriture" },
   { sq: "djathë", fr: "fromage", cat: "nourriture" },
   { sq: "mollë", fr: "pomme", cat: "nourriture" },
-
+  { sq: "perime", fr: "légumes", cat: "nourriture" },
+  { sq: "fruta", fr: "fruits", cat: "nourriture" },
+  { sq: "kafe", fr: "café", cat: "nourriture" },
+  { sq: "çaj", fr: "thé", cat: "nourriture" },
+  { sq: "sheqer", fr: "sucre", cat: "nourriture" },
+  
   // Temps
   { sq: "sot", fr: "aujourd'hui", cat: "temps" },
   { sq: "nesër", fr: "demain", cat: "temps" },
   { sq: "dje", fr: "hier", cat: "temps" },
   { sq: "orë", fr: "heure", cat: "temps" },
-  { sq: "minutë", fr: "minute", cat: "temps" }
+  { sq: "minutë", fr: "minute", cat: "temps" },
+  { sq: "sekondë", fr: "seconde", cat: "temps" },
+  { sq: "javë", fr: "semaine", cat: "temps" },
+  { sq: "muaj", fr: "mois", cat: "temps" },
+  { sq: "vit", fr: "année", cat: "temps" },
+  { sq: "kohë", fr: "temps", cat: "temps" },
 ];
 
 // Références DOM
@@ -224,7 +260,7 @@ function createSnowflakes() {
     snowflake.remove();
   }, 5000);
 }
-setInterval(createSnowflakes, 300);
+setInterval(createSnowflakes, 600);
 
 // 🎉 Confettis multicolores en fin de partie
 function launchConfetti() {
