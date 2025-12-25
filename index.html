@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ALBANAIS – FRANÇAIS Quiz</title>
+  <title>ALBANIS – FRANÇAIS Quiz</title>
   <meta name="description" content="Quiz de vocabulaire albanais–français, choix multiple, score et progression." />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="header">
-    <h1>ALBANAIS – FRANÇAIS Quiz</h1>
+    <h1>ALBANIS – FRANÇAIS Quiz</h1>
     <p>Teste ton vocabulaire, des bases aux thèmes du quotidien.</p>
   </header>
 
@@ -23,6 +23,7 @@
           <option value="fr-sq">Français → Albanais</option>
         </select>
       </div>
+
       <div class="setting">
         <label for="category"><strong>Catégorie:</strong></label>
         <select id="category">
@@ -36,6 +37,7 @@
           <option value="temps">Temps</option>
         </select>
       </div>
+
       <div class="setting">
         <label for="difficulty"><strong>Difficulté:</strong></label>
         <select id="difficulty">
@@ -44,7 +46,9 @@
           <option value="hard">Difficile (5 choix)</option>
         </select>
       </div>
+
       <button id="startBtn" class="btn primary">Commencer</button>
+      <button id="survivalBtn" class="btn danger">Mode Survie</button>
     </section>
 
     <!-- Jeu -->
@@ -54,12 +58,18 @@
         <div><strong>Score:</strong> <span id="score">0</span></div>
         <div><strong>Meilleur:</strong> <span id="best">0</span></div>
       </div>
+
+      <!-- TIMER -->
+      <div id="timer" class="timer hidden">Temps : 5s</div>
+
       <div class="question" id="questionText">…</div>
       <ul class="choices" id="choices"></ul>
+
       <div class="controls">
         <button id="nextBtn" class="btn primary">Suivant</button>
         <button id="skipBtn" class="btn ghost">Passer</button>
       </div>
+
       <div class="feedback" id="feedback"></div>
       <progress id="progress" value="0" max="10"></progress>
     </section>
@@ -82,5 +92,4 @@
 
   <script src="app.js"></script>
 </body>
-
 </html>
