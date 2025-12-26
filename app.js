@@ -1,4 +1,4 @@
-// app.js — Quiz Albanais–Français–Allemand
+// app.js — Quiz Albanais–Français–Allemand–Anglais
 
 // ---------------------------------
 // Données VOCAB (AL + FR + DE + EN)
@@ -154,297 +154,383 @@ const UI = {
 };
 
 // ----------------------
-// Fonction pour appliquer la langue UI
+// Appliquer la langue UI
 // ----------------------
 function applyUI(lang) {
   const t = UI[lang] || UI.fr;
-
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
     if (t[key]) el.textContent = t[key];
   });
 }
 
-// Détecter la langue depuis ?dir=sq-de → "de"
 const params = new URLSearchParams(window.location.search);
-const selectedDir = params.get("dir");
+const selectedDir = params.get("dir");// Synchroniser le menu déroulant avec la langue choisie dans index.html
+if (selectedDir) {
+  const dirSelect = document.getElementById("direction");
+  if (dirSelect) {
+    const option = [...dirSelect.options].find(o => o.value === selectedDir);
+    if (option) dirSelect.value = selectedDir;
+  }
+}
 const uiLang = selectedDir ? selectedDir.split("-")[1] : "fr";
 
 // ----------------------
-// FLASHCARDS (flip + audio)
+// Constantes / état / éléments
 // ----------------------
-const flashPanel = document.getElementById("flashPanel");
-const flashCard = document.getElementById("flashCard");
-const flashFront = document.getElementById("flashFront");
-const flashBack = document.getElementById("flashBack");
-const flashNext = document.getElementById("flashNext");
-const flashBtn = document.getElementById("flashBtn");
+const BEST_KEY = "best_score";
+const SURVIVAL_BEST_KEY = "survival_best_score";
+const SURVIVAL_NAME_KEY = "survival_best_name";
+
+const state = {
+  questions: [],
+  currentIdx: 0,
+  total: 0,
+  score: 0,
+  answered: false,
+  choiceCount: 3,
+  survival: false,
+  pool: [],
+  currentQuestion: null
+};
+
+const el = {
+  direction: document.getElementById("direction"),
+  category: document.getElementById("category"),
+  difficulty: document.getElementById("difficulty"),
+
+  startBtn: document.getElementById("startBtn"),
+  survivalBtn: document.getElementById("survivalBtn"),
+
+  gamePanel: document.getElementById("gamePanel"),
+  resultsPanel: document.getElementById("resultsPanel"),
+
+  questionText: document.getElementById("questionText"),
+  qIndex: document.getElementById("qIndex"),
+  qTotal: document.getElementById("qTotal"),
+  score: document.getElementById("score"),
+  best: document.getElementById("best"),
+  progress: document.getElementById("progress"),
+  feedback: document.getElementById("feedback"),
+  timer: document.getElementById("timer"),
+
+  choices: document.getElementById("choices"),
+  listenBtn: document.getElementById("listenBtn"),
+
+  finalScore: document.getElementById("finalScore"),
+  finalTotal: document.getElementById("finalTotal"),
+  bestMsg: document.getElementById("bestMsg"),
+
+  nextBtn: document.getElementById("nextBtn"),
+  skipBtn: document.getElementById("skipBtn"),
+  restartBtn: document.getElementById("restartBtn"),
+
+  flashPanel: document.getElementById("flashPanel"),
+  flashCard: document.getElementById("flashCard"),
+  flashFront: document.getElementById("flashFront"),
+  flashBack: document.getElementById("flashBack"),
+  flashNext: document.getElementById("flashNext"),
+  flashBtn: document.getElementById("flashBtn"),
+};
+
+// ----------------------
+// Mapping direction → champ source / cible
+// ----------------------
+function getPrompt(dir, word) {
+  switch (dir) {
+    case "sq-fr": return word.sq;
+    case "fr-sq": return word.fr;
+    case "sq-de": return word.sq;
+    case "de-sq": return word.de;
+    case "sq-en": return word.sq;
+    case "en-sq": return word.en;
+    default: return word.sq;
+  }
+}
+
+function getAnswer(dir, word) {
+  switch (dir) {
+    case "sq-fr": return word.fr;
+    case "fr-sq": return word.sq;
+    case "sq-de": return word.de;
+    case "de-sq": return word.sq;
+    case "sq-en": return word.en;
+    case "en-sq": return word.sq;
+    default: return word.fr;
+  }
+}
+
+// ======================================================
+// AUDIO INTELLIGENT (voix automatiques)
+// ======================================================
+let bestGermanVoice = null;
+let bestEnglishVoice = null;
+
+function initVoices() {
+  const voices = speechSynthesis.getVoices();
+
+  bestGermanVoice =
+    voices.find(v => v.name.includes("Katja")) ||
+    voices.find(v => v.name.includes("Conrad")) ||
+    voices.find(v => v.name.includes("Google") && v.lang === "de-DE") ||
+    voices.find(v => v.lang === "de-DE") || null;
+
+  bestEnglishVoice =
+    voices.find(v => v.name.includes("Microsoft") && v.lang === "en-US") ||
+    voices.find(v => v.name.includes("Google") && v.lang === "en-US") ||
+    voices.find(v => v.lang === "en-US") ||
+    voices.find(v => v.lang === "en-GB") || null;
+}
+
+speechSynthesis.onvoiceschanged = initVoices;
+
+function getVoiceLangPrompt(dir) {
+  switch (dir) {
+    case "sq-fr":
+    case "sq-de":
+    case "sq-en":
+      return "sq-AL";
+    case "fr-sq":
+      return "fr-FR";
+    case "de-sq":
+      return "de-DE";
+    case "en-sq":
+      return "en-US";
+  }
+}
+
+function getVoiceLangAnswer(dir) {
+  switch (dir) {
+    case "sq-fr":
+      return "fr-FR";
+    case "sq-de":
+      return "de-DE";
+    case "sq-en":
+      return "en-US";
+    case "fr-sq":
+    case "de-sq":
+    case "en-sq":
+      return "sq-AL";
+  }
+}
+
+function speak(text, lang) {
+  const utter = new SpeechSynthesisUtterance(text);
+  const voices = speechSynthesis.getVoices();
+
+  if (lang === "de-DE" && bestGermanVoice) {
+    utter.voice = bestGermanVoice;
+    utter.rate = 0.9;
+    utter.pitch = 0.95;
+  } else if (lang === "en-US" && bestEnglishVoice) {
+    utter.voice = bestEnglishVoice;
+    utter.rate = 0.95;
+    utter.pitch = 1.0;
+  } else {
+    utter.voice = voices.find(v => v.lang === lang) || null;
+  }
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utter);
+}
+
+// ======================================================
+// FLASHCARDS
+// ======================================================
 
 function startFlashcards() {
+  el.flashPanel.classList.remove("hidden");
   el.gamePanel.classList.add("hidden");
   el.resultsPanel.classList.add("hidden");
-  flashPanel.classList.remove("hidden");
-
   loadFlashcard();
 }
 
 function loadFlashcard() {
   const dir = el.direction.value;
   const pool = VOCAB;
+
   const word = pool[Math.floor(Math.random() * pool.length)];
 
-  flashFront.textContent = getPrompt(dir, word);
-  flashBack.textContent = getAnswer(dir, word);
+  el.flashFront.textContent = getPrompt(dir, word);
+  el.flashBack.textContent = getAnswer(dir, word);
 
-  flashCard.classList.remove("flip");
+  el.flashCard.classList.remove("flip");
 
-  // Lecture automatique du recto
-  const lang = getVoiceLang(dir);
-  speak(flashFront.textContent, lang);
+  // Lecture automatique recto
+  speak(el.flashFront.textContent, getVoiceLangPrompt(dir));
 }
 
-// 👉 IMPORTANT : un seul event listener pour gérer flip + audio
-flashCard.addEventListener("click", () => {
-  flashCard.classList.toggle("flip");
-
+el.flashCard.addEventListener("click", () => {
+  el.flashCard.classList.toggle("flip");
   const dir = el.direction.value;
-  const lang = getVoiceLang(dir);
 
-  if (flashCard.classList.contains("flip")) {
-    speak(flashBack.textContent, lang);
+  if (el.flashCard.classList.contains("flip")) {
+    speak(el.flashBack.textContent, getVoiceLangAnswer(dir));
   } else {
-    speak(flashFront.textContent, lang);
+    speak(el.flashFront.textContent, getVoiceLangPrompt(dir));
   }
 });
 
-flashNext.addEventListener("click", loadFlashcard);
-flashBtn.addEventListener("click", startFlashcards);
+el.flashNext.addEventListener("click", loadFlashcard);
+el.flashBtn.addEventListener("click", startFlashcards);
 
-// ----------------------
-// MODE AUDIO 🔊
-// ----------------------
+// ======================================================
+// QUIZ NORMAL + MODE SURVIE
+// ======================================================
 
-// Détection automatique de la langue selon la direction
-function getVoiceLang(dir) {
-  switch (dir) {
-    case "sq-fr":
-    case "sq-de":
-    case "sq-en":
-      return "sq-AL"; // Albanais
-    case "fr-sq":
-      return "fr-FR"; // Français
-    case "de-sq":
-      return "de-DE"; // Allemand
-    case "en-sq":
-      return "en-US"; // Anglais
-    default:
-      return "sq-AL";
+function normalize(s) {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+  return arr;
 }
 
-// Fonction de lecture
-function speak(text, lang) {
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = lang;
-  speechSynthesis.cancel(); // stop previous speech
-  speechSynthesis.speak(utter);
+function generateQuestion(dir, word, pool, choiceCount) {
+  const prompt = getPrompt(dir, word);
+  const answer = getAnswer(dir, word);
+
+  const distractorPool = pool
+    .filter(v => v !== word)
+    .map(v => getAnswer(dir, v))
+    .filter(v => normalize(v) !== normalize(answer));
+
+  const options = shuffle([
+    answer,
+    ...shuffle(distractorPool).slice(0, choiceCount - 1)
+  ]);
+
+  return { prompt, answer, options };
 }
 
-// Bouton écouter dans le quiz
-const listenBtn = document.getElementById("listenBtn");
-
-if (listenBtn) {
-  listenBtn.addEventListener("click", () => {
-    const dir = el.direction.value;
-    const q = state.survival ? state.currentQuestion : state.questions[state.currentIdx];
-    const lang = getVoiceLang(dir);
-    speak(q.prompt, lang);
-  });
-}
-
-// Lecture automatique à chaque nouvelle question
-function autoSpeakQuestion() {
-  const dir = el.direction.value;
-  const q = state.survival ? state.currentQuestion : state.questions[state.currentIdx];
-  const lang = getVoiceLang(dir);
-  speak(q.prompt, lang);
-}
-
-// Injection dans le quiz
-const oldRenderQuestion = renderQuestion;
-renderQuestion = function () {
-  oldRenderQuestion();
-  autoSpeakQuestion();
-};
-
-const oldRenderSurvival = renderSurvivalQuestion;
-renderSurvivalQuestion = function () {
-  oldRenderSurvival();
-  autoSpeakQuestion();
-};
-
-// Lecture automatique à chaque nouvelle flashcard
-const oldLoadFlashcard = loadFlashcard;
-loadFlashcard = function () {
-  oldLoadFlashcard();
-  const dir = el.direction.value;
-  const lang = getVoiceLang(dir);
-  speak(flashFront.textContent, lang);
-};
-
-document.addEventListener("DOMContentLoaded", () => applyUI(uiLang));
-// ----------------------
-// Références DOM
-// ----------------------
-const el = {
-  direction: document.getElementById("direction"),
-  category: document.getElementById("category"),
-  difficulty: document.getElementById("difficulty"),
-  startBtn: document.getElementById("startBtn"),
-  survivalBtn: document.getElementById("survivalBtn"),
-  gamePanel: document.getElementById("gamePanel"),
-  resultsPanel: document.getElementById("resultsPanel"),
-  qIndex: document.getElementById("qIndex"),
-  qTotal: document.getElementById("qTotal"),
-  score: document.getElementById("score"),
-  best: document.getElementById("best"),
-  questionText: document.getElementById("questionText"),
-  choices: document.getElementById("choices"),
-  nextBtn: document.getElementById("nextBtn"),
-  skipBtn: document.getElementById("skipBtn"),
-  feedback: document.getElementById("feedback"),
-  progress: document.getElementById("progress"),
-  finalScore: document.getElementById("finalScore"),
-  finalTotal: document.getElementById("finalTotal"),
-  bestMsg: document.getElementById("bestMsg"),
-  restartBtn: document.getElementById("restartBtn"),
-  timer: document.getElementById("timer")
-};
-
-// Appliquer la direction depuis l'URL (sq-fr, sq-de, sq-en, etc.)
-if (selectedDir && el.direction) {
-  el.direction.value = selectedDir;
-}
-
-// ----------------------
-// État
-// ----------------------
-let state = {
-  pool: [],
-  questions: [],
-  currentIdx: 0,
-  score: 0,
-  total: 10,
-  answered: false,
-  choiceCount: 4,
-  survival: false,
-  currentQuestion: null
-};
-
-const BEST_KEY = "alb-quiz-best";
-const SURVIVAL_BEST_KEY = "alb-quiz-survival-best";
-const SURVIVAL_NAME_KEY = "alb-quiz-survival-name";
-
-if (el.best) {
-  el.best.textContent = localStorage.getItem(BEST_KEY) || 0;
-}
-
-// ----------------------
-// Helpers direction
-// ----------------------
-function getPrompt(dir, word) {
-  switch (dir) {
-    case "sq-fr":
-    case "sq-de":
-    case "sq-en":
-      return word.sq;
-    case "fr-sq":
-      return word.fr;
-    case "de-sq":
-      return word.de;
-    case "en-sq":
-      return word.en;
-    default:
-      return word.sq;
-  }
-}
-
-function getAnswer(dir, word) {
-  switch (dir) {
-    case "sq-fr":
-      return word.fr;
-    case "sq-de":
-      return word.de;
-    case "sq-en":
-      return word.en;
-    case "fr-sq":
-    case "de-sq":
-    case "en-sq":
-      return word.sq;
-    default:
-      return word.fr;
-  }
-}
-
-function mapCandidate(dir, word) {
-  switch (dir) {
-    case "sq-fr":
-    case "fr-sq":
-      return word.fr;
-    case "sq-de":
-    case "de-sq":
-      return word.de;
-    case "sq-en":
-    case "en-sq":
-      return word.en;
-    default:
-      return word.fr;
-  }
-}
-
-// ----------------------
-// Mode normal
-// ----------------------
 function startGame() {
   state.survival = false;
-  if (el.timer) el.timer.classList.add("hidden");
 
   const dir = el.direction.value;
   const cat = el.category.value;
   const diff = el.difficulty.value;
-  state.choiceCount = diff === "easy" ? 3 : diff === "medium" ? 4 : 5;
+
+  state.choiceCount =
+    diff === "easy" ? 3 :
+    diff === "medium" ? 4 : 5;
 
   const pool = VOCAB.filter(v => cat === "all" || v.cat === cat);
-  state.pool = shuffle([...pool]);
-  state.questions = [];
+  state.pool = [...pool];
+
+  state.total = 10;
   state.currentIdx = 0;
   state.score = 0;
-  state.total = Math.min(10, state.pool.length);
+  state.questions = [];
 
   for (let i = 0; i < state.total; i++) {
-    const target = state.pool[i];
-    const prompt = getPrompt(dir, target);
-    const answer = getAnswer(dir, target);
-    const others = pool.filter(v => v !== target);
-    const candidates = shuffle(others)
-      .slice(0, state.choiceCount - 1)
-      .map(v => mapCandidate(dir, v));
-    const options = shuffle([answer, ...candidates]);
-    state.questions.push({ prompt, answer, options });
+    const word = pool[Math.floor(Math.random() * pool.length)];
+    state.questions.push(generateQuestion(dir, word, pool, state.choiceCount));
   }
 
   el.qTotal.textContent = state.total;
   el.score.textContent = 0;
   el.progress.max = state.total;
   el.progress.value = 0;
+
   el.resultsPanel.classList.add("hidden");
   el.gamePanel.classList.remove("hidden");
+  el.timer.classList.add("hidden");
+  el.feedback.textContent = "";
 
   renderQuestion();
 }
 
+function renderQuestion() {
+  const q = state.questions[state.currentIdx];
+  state.answered = false;
+
+  el.questionText.textContent = q.prompt;
+  el.choices.innerHTML = "";
+
+  q.options.forEach(opt => {
+    const li = document.createElement("li");
+    li.className = "choice festive";
+    li.textContent = opt;
+    li.addEventListener("click", () => handleChoice(li, opt));
+    el.choices.appendChild(li);
+  });
+
+  el.qIndex.textContent = state.currentIdx + 1;
+  el.progress.value = state.currentIdx;
+  el.feedback.textContent = "";
+
+  // 🔊 Lecture automatique
+  const dir = el.direction.value;
+  speak(q.prompt, getVoiceLangPrompt(dir));
+}
+
+function handleChoice(li, opt) {
+  if (state.answered) return;
+  const q = state.questions[state.currentIdx];
+  const correct = normalize(opt) === normalize(q.answer);
+  state.answered = true;
+
+  const choices = el.choices.querySelectorAll(".choice");
+  choices.forEach(c => {
+    const isCorrect = normalize(c.textContent) === normalize(q.answer);
+    if (isCorrect) c.classList.add("correct");
+  });
+
+  if (!correct) li.classList.add("wrong");
+
+  if (correct) {
+    state.score++;
+    el.score.textContent = state.score;
+    el.feedback.textContent = "Bien joué !";
+  } else {
+    el.feedback.textContent = `Réponse: ${q.answer}`;
+  }
+}
+
+function next() {
+  if (state.currentIdx < state.total - 1) {
+    state.currentIdx++;
+    renderQuestion();
+  } else finish();
+}
+
+function skip() {
+  if (state.answered) return;
+  state.answered = true;
+  el.feedback.textContent = "Passé.";
+
+  if (state.currentIdx < state.total - 1) {
+    state.currentIdx++;
+    renderQuestion();
+  } else finish();
+}
+
+function finish() {
+  el.gamePanel.classList.add("hidden");
+  el.resultsPanel.classList.remove("hidden");
+
+  el.finalScore.textContent = state.score;
+  el.finalTotal.textContent = state.total;
+
+  const best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10);
+
+  if (state.score > best) {
+    localStorage.setItem(BEST_KEY, String(state.score));
+    el.best.textContent = state.score;
+    el.bestMsg.textContent = "Nouveau meilleur score !";
+  } else {
+    el.bestMsg.textContent = `Meilleur actuel: ${best}`;
+  }
+
+  launchConfetti();
+}
+
 // ----------------------
-// Mode Survie
+// MODE SURVIE
 // ----------------------
 let timer = null;
 let timeLeft = 5;
@@ -455,13 +541,14 @@ function startSurvival() {
   const dir = el.direction.value;
   const cat = el.category.value;
   const diff = el.difficulty.value;
-  state.choiceCount = diff === "easy" ? 3 : diff === "medium" ? 4 : 5;
+
+  state.choiceCount =
+    diff === "easy" ? 3 :
+    diff === "medium" ? 4 : 5;
 
   const pool = VOCAB.filter(v => cat === "all" || v.cat === cat);
   state.pool = [...pool];
-  state.currentIdx = 0;
   state.score = 0;
-  state.total = Infinity;
 
   el.qTotal.textContent = "∞";
   el.score.textContent = 0;
@@ -471,6 +558,7 @@ function startSurvival() {
   el.resultsPanel.classList.add("hidden");
   el.gamePanel.classList.remove("hidden");
   el.timer.classList.remove("hidden");
+  el.feedback.textContent = "";
 
   renderSurvivalQuestion();
 }
@@ -483,24 +571,16 @@ function renderSurvivalQuestion() {
   const dir = el.direction.value;
   const pool = state.pool;
 
-  const target = pool[Math.floor(Math.random() * pool.length)];
-  const prompt = getPrompt(dir, target);
-  const answer = getAnswer(dir, target);
+  const word = pool[Math.floor(Math.random() * pool.length)];
+  const q = generateQuestion(dir, word, pool, state.choiceCount);
 
-  const others = pool.filter(v => v !== target);
-  const candidates = shuffle(others)
-    .slice(0, state.choiceCount - 1)
-    .map(v => mapCandidate(dir, v));
-
-  const options = shuffle([answer, ...candidates]);
-
-  state.currentQuestion = { prompt, answer, options };
+  state.currentQuestion = q;
   state.answered = false;
 
-  el.questionText.textContent = prompt;
+  el.questionText.textContent = q.prompt;
   el.choices.innerHTML = "";
 
-  options.forEach(opt => {
+  q.options.forEach(opt => {
     const li = document.createElement("li");
     li.className = "choice festive";
     li.textContent = opt;
@@ -511,6 +591,9 @@ function renderSurvivalQuestion() {
   el.qIndex.textContent = state.score + 1;
 
   startTimer();
+
+  // 🔊 Lecture automatique
+  speak(q.prompt, getVoiceLangPrompt(dir));
 }
 
 function startTimer() {
@@ -571,136 +654,15 @@ function endSurvival() {
   launchConfetti();
 }
 
-// ----------------------
-// Mode normal — affichage question
-// ----------------------
-function renderQuestion() {
-  const q = state.questions[state.currentIdx];
-  state.answered = false;
-
-  el.questionText.textContent = q.prompt;
-  el.choices.innerHTML = "";
-
-  q.options.forEach(opt => {
-    const li = document.createElement("li");
-    li.className = "choice festive";
-    li.textContent = opt;
-    li.addEventListener("click", () => handleChoice(li, opt));
-    el.choices.appendChild(li);
-  });
-
-  el.qIndex.textContent = state.currentIdx + 1;
-  el.progress.value = state.currentIdx;
-  el.feedback.textContent = "";
-}
-
-// ----------------------
-// Mode normal — choix
-// ----------------------
-function handleChoice(li, opt) {
-  if (state.answered) return;
-  const q = state.questions[state.currentIdx];
-  const correct = normalize(opt) === normalize(q.answer);
-  state.answered = true;
-
-  const choices = el.choices.querySelectorAll(".choice");
-  choices.forEach(c => {
-    const isCorrect = normalize(c.textContent) === normalize(q.answer);
-    if (isCorrect) c.classList.add("correct");
-  });
-
-  if (!correct) li.classList.add("wrong");
-
-  if (correct) {
-    state.score++;
-    el.score.textContent = state.score;
-    el.feedback.textContent = "Bien joué !";
-  } else {
-    el.feedback.textContent = `Réponse: ${q.answer}`;
-  }
-}
-
-// ----------------------
-// Mode normal — suivant
-// ----------------------
-function next() {
-  if (state.currentIdx < state.total - 1) {
-    state.currentIdx++;
-    renderQuestion();
-  } else finish();
-}
-
-// ----------------------
-// Mode normal — passer
-// ----------------------
-function skip() {
-  if (state.answered) return;
-  state.answered = true;
-  el.feedback.textContent = "Passé.";
-
-  if (state.currentIdx < state.total - 1) {
-    state.currentIdx++;
-    renderQuestion();
-  } else finish();
-}
-
-// ----------------------
-// Mode normal — fin
-// ----------------------
-function finish() {
-  el.gamePanel.classList.add("hidden");
-  el.resultsPanel.classList.remove("hidden");
-
-  el.finalScore.textContent = state.score;
-  el.finalTotal.textContent = state.total;
-
-  const best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10);
-
-  if (state.score > best) {
-    localStorage.setItem(BEST_KEY, String(state.score));
-    el.best.textContent = state.score;
-    el.bestMsg.textContent = "Nouveau meilleur score !";
-  } else {
-    el.bestMsg.textContent = `Meilleur actuel: ${best}`;
-  }
-
-  launchConfetti();
-}
-
-// ----------------------
-// Rejouer
-// ----------------------
 function restart() {
   if (state.survival) startSurvival();
   else startGame();
 }
-// ----------------------
-// Utils
-// ----------------------
-function normalize(s) {
-  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-}
+// ======================================================
+// EFFETS VISUELS (NEIGE + CONFETTIS)
+// ======================================================
 
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-// ----------------------
-// Écouteurs
-// ----------------------
-el.startBtn.addEventListener("click", startGame);
-el.survivalBtn.addEventListener("click", startSurvival);
-el.nextBtn.addEventListener("click", next);
-el.skipBtn.addEventListener("click", skip);
-el.restartBtn.addEventListener("click", restart);
-
-// ----------------------
-// Effet de neige ❄️
-// ----------------------
+// ❄️ Effet de neige
 function createSnowflakes() {
   const snowContainer = document.querySelector('.snow');
   if (!snowContainer) return;
@@ -722,9 +684,7 @@ function createSnowflakes() {
 
 setInterval(createSnowflakes, 600);
 
-// ----------------------
-// Confettis 🎉
-// ----------------------
+// 🎉 Confettis
 function launchConfetti() {
   const colors = ["#ff0", "#f0f", "#0ff", "#0f0", "#f00", "#00f", "#ffa500"];
   const confettiContainer = document.body;
@@ -757,12 +717,33 @@ function launchConfetti() {
   }
 }
 
-// ----------------------
-// Initialisation UI multilingue
-// ----------------------
+// ======================================================
+// ÉCOUTEURS D'ÉVÉNEMENTS
+// ======================================================
+
+el.startBtn.addEventListener("click", startGame);
+el.survivalBtn.addEventListener("click", startSurvival);
+el.nextBtn.addEventListener("click", next);
+el.skipBtn.addEventListener("click", skip);
+el.restartBtn.addEventListener("click", restart);
+
+// Bouton "Écouter" du quiz
+if (el.listenBtn) {
+  el.listenBtn.addEventListener("click", () => {
+    const dir = el.direction.value;
+    const text = el.questionText.textContent;
+    speak(text, getVoiceLangPrompt(dir));
+  });
+}
+
+// ======================================================
+// INITIALISATION UI MULTILINGUE
+// ======================================================
+
 document.addEventListener("DOMContentLoaded", () => {
   applyUI(uiLang);
 });
-// ----------------------
-// Fin du fichier app.js
-// ----------------------
+
+// ======================================================
+// FIN DU FICHIER app.js
+// ======================================================
