@@ -1,92 +1,176 @@
-// app.js — Quiz Albanais–Français
+// app.js — Quiz Albanais–Français–Allemand
 
-// ----------------------
-// Données
-// ----------------------
+// ---------------------------------
+// Données VOCAB (AL + FR + DE + EN)
+// ---------------------------------
 const VOCAB = [
   // Bases
-  { sq: "po", fr: "oui", cat: "bases" },
-  { sq: "jo", fr: "non", cat: "bases" },
-  { sq: "ndoshta", fr: "peut-être", cat: "bases" },
-  { sq: "mirë", fr: "bien", cat: "bases" },
-  { sq: "keq", fr: "mal", cat: "bases" },
-  { sq: "mësoj", fr: "apprendre", cat: "bases" },
-  { sq: "kuptoj", fr: "comprendre", cat: "bases" },
-  { sq: "flas", fr: "parler", cat: "bases" },
-  { sq: "shkruaj", fr: "écrire", cat: "bases" },
-  { sq: "lexoj", fr: "lire", cat: "bases" },
-  { sq: "mut", fr: "caca", cat: "bases" },
+  { sq: "po", fr: "oui", de: "ja", en: "yes", cat: "bases" },
+  { sq: "jo", fr: "non", de: "nein", en: "no", cat: "bases" },
+  { sq: "ndoshta", fr: "peut-être", de: "vielleicht", en: "maybe", cat: "bases" },
+  { sq: "mirë", fr: "bien", de: "gut", en: "good", cat: "bases" },
+  { sq: "keq", fr: "mal", de: "schlecht", en: "bad", cat: "bases" },
+  { sq: "mësoj", fr: "apprendre", de: "lernen", en: "learn", cat: "bases" },
+  { sq: "kuptoj", fr: "comprendre", de: "verstehen", en: "understand", cat: "bases" },
+  { sq: "flas", fr: "parler", de: "sprechen", en: "speak", cat: "bases" },
+  { sq: "shkruaj", fr: "écrire", de: "schreiben", en: "write", cat: "bases" },
+  { sq: "lexoj", fr: "lire", de: "lesen", en: "read", cat: "bases" },
+  { sq: "mut", fr: "caca", de: "kacke", en: "poop", cat: "bases" },
 
   // Salutations
-  { sq: "ju lutem", fr: "s'il vous plaît", cat: "salutations" },
-  { sq: "të lutem", fr: "s'il te plaît", cat: "salutations" },
-  { sq: "faleminderit", fr: "merci", cat: "salutations" },
-  { sq: "përshëndetje", fr: "bonjour", cat: "salutations" },
-  { sq: "mirupafshim", fr: "au revoir", cat: "salutations" },
-  { sq: "më fal", fr: "excusez-moi", cat: "salutations" },
-  { sq: "si jeni?", fr: "comment ça va?", cat: "salutations" },
+  { sq: "ju lutem", fr: "s'il vous plaît", de: "bitte", en: "please", cat: "salutations" },
+  { sq: "të lutem", fr: "s'il te plaît", de: "bitte", en: "please", cat: "salutations" },
+  { sq: "faleminderit", fr: "merci", de: "danke", en: "thank you", cat: "salutations" },
+  { sq: "përshëndetje", fr: "bonjour", de: "hallo", en: "hello", cat: "salutations" },
+  { sq: "mirupafshim", fr: "au revoir", de: "auf Wiedersehen", en: "goodbye", cat: "salutations" },
+  { sq: "më fal", fr: "excusez-moi", de: "entschuldigung", en: "sorry", cat: "salutations" },
+  { sq: "si jeni?", fr: "comment ça va?", de: "wie geht's?", en: "how are you?", cat: "salutations" },
 
   // Nombres
-  { sq: "një", fr: "un", cat: "nombres" },
-  { sq: "dy", fr: "deux", cat: "nombres" },
-  { sq: "tre", fr: "trois", cat: "nombres" },
-  { sq: "katër", fr: "quatre", cat: "nombres" },
-  { sq: "pesë", fr: "cinq", cat: "nombres" },
-  { sq: "gjashtë", fr: "six", cat: "nombres" },
-  { sq: "shtatë", fr: "sept", cat: "nombres" },
-  { sq: "tetë", fr: "huit", cat: "nombres" },
-  { sq: "nëntë", fr: "neuf", cat: "nombres" },
-  { sq: "dhjetë", fr: "dix", cat: "nombres" },
+  { sq: "një", fr: "un", de: "eins", en: "one", cat: "nombres" },
+  { sq: "dy", fr: "deux", de: "zwei", en: "two", cat: "nombres" },
+  { sq: "tre", fr: "trois", de: "drei", en: "three", cat: "nombres" },
+  { sq: "katër", fr: "quatre", de: "vier", en: "four", cat: "nombres" },
+  { sq: "pesë", fr: "cinq", de: "fünf", en: "five", cat: "nombres" },
+  { sq: "gjashtë", fr: "six", de: "sechs", en: "six", cat: "nombres" },
+  { sq: "shtatë", fr: "sept", de: "sieben", en: "seven", cat: "nombres" },
+  { sq: "tetë", fr: "huit", de: "acht", en: "eight", cat: "nombres" },
+  { sq: "nëntë", fr: "neuf", de: "neun", en: "nine", cat: "nombres" },
+  { sq: "dhjetë", fr: "dix", de: "zehn", en: "ten", cat: "nombres" },
 
   // Couleurs
-  { sq: "kuq", fr: "rouge", cat: "couleurs" },
-  { sq: "bardhë", fr: "blanc", cat: "couleurs" },
-  { sq: "zezë", fr: "noir", cat: "couleurs" },
-  { sq: "mavi", fr: "bleu", cat: "couleurs" },
-  { sq: "jeshile", fr: "vert", cat: "couleurs" },
-  { sq: "sari", fr: "jaune", cat: "couleurs" },
-  { sq: "portokall", fr: "orange", cat: "couleurs" },
-  { sq: "pembe", fr: "rose", cat: "couleurs" },
-  { sq: "kaft", fr: "marron", cat: "couleurs" },
-  { sq: "përhift", fr: "gris", cat: "couleurs" },
+  { sq: "kuq", fr: "rouge", de: "rot", en: "red", cat: "couleurs" },
+  { sq: "bardhë", fr: "blanc", de: "weiß", en: "white", cat: "couleurs" },
+  { sq: "zezë", fr: "noir", de: "schwarz", en: "black", cat: "couleurs" },
+  { sq: "mavi", fr: "bleu", de: "blau", en: "blue", cat: "couleurs" },
+  { sq: "jeshile", fr: "vert", de: "grün", en: "green", cat: "couleurs" },
+  { sq: "sari", fr: "jaune", de: "gelb", en: "yellow", cat: "couleurs" },
+  { sq: "portokall", fr: "orange", de: "orange", en: "orange", cat: "couleurs" },
+  { sq: "pembe", fr: "rose", de: "rosa", en: "pink", cat: "couleurs" },
+  { sq: "kaft", fr: "marron", de: "braun", en: "brown", cat: "couleurs" },
+  { sq: "përhift", fr: "gris", de: "grau", en: "grey", cat: "couleurs" },
 
   // Famille
-  { sq: "nënë", fr: "mère", cat: "famille" },
-  { sq: "babë", fr: "père", cat: "famille" },
-  { sq: "vëlla", fr: "frère", cat: "famille" },
-  { sq: "motër", fr: "sœur", cat: "famille" },
-  { sq: "gjysh", fr: "grand-père", cat: "famille" },
-  { sq: "gjyshe", fr: "grand-mère", cat: "famille" },
-  { sq: "djalë", fr: "fils", cat: "famille" },
-  { sq: "vajzë", fr: "fille", cat: "famille" },
-  { sq: "bashkëshort", fr: "mari", cat: "famille" },
-  { sq: "bashkëshorte", fr: "femme", cat: "famille" },
+  { sq: "nënë", fr: "mère", de: "mutter", en: "mother", cat: "famille" },
+  { sq: "babë", fr: "père", de: "vater", en: "father", cat: "famille" },
+  { sq: "vëlla", fr: "frère", de: "bruder", en: "brother", cat: "famille" },
+  { sq: "motër", fr: "sœur", de: "schwester", en: "sister", cat: "famille" },
+  { sq: "gjysh", fr: "grand-père", de: "großvater", en: "grandfather", cat: "famille" },
+  { sq: "gjyshe", fr: "grand-mère", de: "großmutter", en: "grandmother", cat: "famille" },
+  { sq: "djalë", fr: "fils", de: "sohn", en: "son", cat: "famille" },
+  { sq: "vajzë", fr: "fille", de: "tochter", en: "daughter", cat: "famille" },
+  { sq: "bashkëshort", fr: "mari", de: "ehemann", en: "husband", cat: "famille" },
+  { sq: "bashkëshorte", fr: "femme", de: "ehefrau", en: "wife", cat: "famille" },
 
   // Nourriture
-  { sq: "bukë", fr: "pain", cat: "nourriture" },
-  { sq: "ujë", fr: "eau", cat: "nourriture" },
-  { sq: "mish", fr: "viande", cat: "nourriture" },
-  { sq: "djathë", fr: "fromage", cat: "nourriture" },
-  { sq: "mollë", fr: "pomme", cat: "nourriture" },
-  { sq: "perime", fr: "légumes", cat: "nourriture" },
-  { sq: "fruta", fr: "fruits", cat: "nourriture" },
-  { sq: "kafe", fr: "café", cat: "nourriture" },
-  { sq: "çaj", fr: "thé", cat: "nourriture" },
-  { sq: "sheqer", fr: "sucre", cat: "nourriture" },
+  { sq: "bukë", fr: "pain", de: "brot", en: "bread", cat: "nourriture" },
+  { sq: "ujë", fr: "eau", de: "wasser", en: "water", cat: "nourriture" },
+  { sq: "mish", fr: "viande", de: "fleisch", en: "meat", cat: "nourriture" },
+  { sq: "djathë", fr: "fromage", de: "käse", en: "cheese", cat: "nourriture" },
+  { sq: "mollë", fr: "pomme", de: "apfel", en: "apple", cat: "nourriture" },
+  { sq: "perime", fr: "légumes", de: "gemüse", en: "vegetables", cat: "nourriture" },
+  { sq: "fruta", fr: "fruits", de: "obst", en: "fruits", cat: "nourriture" },
+  { sq: "kafe", fr: "café", de: "kaffee", en: "coffee", cat: "nourriture" },
+  { sq: "çaj", fr: "thé", de: "tee", en: "tea", cat: "nourriture" },
+  { sq: "sheqer", fr: "sucre", de: "zucker", en: "sugar", cat: "nourriture" },
 
   // Temps
-  { sq: "sot", fr: "aujourd'hui", cat: "temps" },
-  { sq: "nesër", fr: "demain", cat: "temps" },
-  { sq: "dje", fr: "hier", cat: "temps" },
-  { sq: "orë", fr: "heure", cat: "temps" },
-  { sq: "minutë", fr: "minute", cat: "temps" },
-  { sq: "sekondë", fr: "seconde", cat: "temps" },
-  { sq: "javë", fr: "semaine", cat: "temps" },
-  { sq: "muaj", fr: "mois", cat: "temps" },
-  { sq: "vit", fr: "année", cat: "temps" },
-  { sq: "kohë", fr: "temps", cat: "temps" },
+  { sq: "sot", fr: "aujourd'hui", de: "heute", en: "today", cat: "temps" },
+  { sq: "nesër", fr: "demain", de: "morgen", en: "tomorrow", cat: "temps" },
+  { sq: "dje", fr: "hier", de: "gestern", en: "yesterday", cat: "temps" },
+  { sq: "orë", fr: "heure", de: "stunde", en: "hour", cat: "temps" },
+  { sq: "minutë", fr: "minute", de: "minute", en: "minute", cat: "temps" },
+  { sq: "sekondë", fr: "seconde", de: "sekunde", en: "second", cat: "temps" },
+  { sq: "javë", fr: "semaine", de: "woche", en: "week", cat: "temps" },
+  { sq: "muaj", fr: "mois", de: "monat", en: "month", cat: "temps" },
+  { sq: "vit", fr: "année", de: "jahr", en: "year", cat: "temps" },
+  { sq: "kohë", fr: "temps", de: "zeit", en: "time", cat: "temps" },
 ];
 
+// ----------------------
+// UI MULTILINGUE
+// ----------------------
+const UI = {
+  fr: {
+    title: "Quiz Albanais – Multilingue",
+    header_title: "Quiz Albanais – Multilingue",
+    header_subtitle: "Teste ton vocabulaire en albanais, français, allemand et anglais.",
+    label_direction: "Direction:",
+    label_category: "Catégorie:",
+    label_difficulty: "Difficulté:",
+    btn_start: "Commencer",
+    btn_survival: "Mode Survie",
+    btn_back: "Retour au menu",
+    label_question: "Question:",
+    label_score: "Score:",
+    label_best: "Meilleur:",
+    label_time: "Temps : 5s",
+    btn_next: "Suivant",
+    btn_skip: "Passer",
+    results_title: "Bravo !",
+    results_score: "Ton score:",
+    btn_restart: "Rejouer",
+  },
+  de: {
+    title: "Albanisch Quiz – Mehrsprachig",
+    header_title: "Albanisch Quiz – Mehrsprachig",
+    header_subtitle: "Teste deinen Wortschatz auf Albanisch, Französisch, Deutsch und Englisch.",
+    label_direction: "Richtung:",
+    label_category: "Kategorie:",
+    label_difficulty: "Schwierigkeit:",
+    btn_start: "Starten",
+    btn_survival: "Überlebensmodus",
+    btn_back: "Zurück zum Menü",
+    label_question: "Frage:",
+    label_score: "Punkte:",
+    label_best: "Bestleistung:",
+    label_time: "Zeit : 5s",
+    btn_next: "Weiter",
+    btn_skip: "Überspringen",
+    results_title: "Gut gemacht!",
+    results_score: "Dein Ergebnis:",
+    btn_restart: "Nochmal spielen",
+  },
+  en: {
+    title: "Albanian Quiz – Multilingual",
+    header_title: "Albanian Quiz – Multilingual",
+    header_subtitle: "Test your vocabulary in Albanian, French, German and English.",
+    label_direction: "Direction:",
+    label_category: "Category:",
+    label_difficulty: "Difficulty:",
+    btn_start: "Start",
+    btn_survival: "Survival Mode",
+    btn_back: "Back to menu",
+    label_question: "Question:",
+    label_score: "Score:",
+    label_best: "Best:",
+    label_time: "Time : 5s",
+    btn_next: "Next",
+    btn_skip: "Skip",
+    results_title: "Well done!",
+    results_score: "Your score:",
+    btn_restart: "Play again",
+  }
+};
+
+// ----------------------
+// Fonction pour appliquer la langue UI
+// ----------------------
+function applyUI(lang) {
+  const t = UI[lang] || UI.fr;
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (t[key]) el.textContent = t[key];
+  });
+}
+
+// Détecter la langue depuis ?dir=sq-de → "de"
+const params = new URLSearchParams(window.location.search);
+const selectedDir = params.get("dir");
+const uiLang = selectedDir ? selectedDir.split("-")[1] : "fr";
+
+document.addEventListener("DOMContentLoaded", () => applyUI(uiLang));
 // ----------------------
 // Références DOM
 // ----------------------
@@ -115,6 +199,11 @@ const el = {
   timer: document.getElementById("timer")
 };
 
+// Appliquer la direction depuis l'URL (sq-fr, sq-de, sq-en, etc.)
+if (selectedDir && el.direction) {
+  el.direction.value = selectedDir;
+}
+
 // ----------------------
 // État
 // ----------------------
@@ -126,21 +215,77 @@ let state = {
   total: 10,
   answered: false,
   choiceCount: 4,
-  survival: false
+  survival: false,
+  currentQuestion: null
 };
 
-const BEST_KEY = "alb-fr-quiz-best";
-const SURVIVAL_BEST_KEY = "alb-fr-survival-best";
-const SURVIVAL_NAME_KEY = "alb-fr-survival-name";
+const BEST_KEY = "alb-quiz-best";
+const SURVIVAL_BEST_KEY = "alb-quiz-survival-best";
+const SURVIVAL_NAME_KEY = "alb-quiz-survival-name";
 
-el.best.textContent = localStorage.getItem(BEST_KEY) || 0;
+if (el.best) {
+  el.best.textContent = localStorage.getItem(BEST_KEY) || 0;
+}
+
+// ----------------------
+// Helpers direction
+// ----------------------
+function getPrompt(dir, word) {
+  switch (dir) {
+    case "sq-fr":
+    case "sq-de":
+    case "sq-en":
+      return word.sq;
+    case "fr-sq":
+      return word.fr;
+    case "de-sq":
+      return word.de;
+    case "en-sq":
+      return word.en;
+    default:
+      return word.sq;
+  }
+}
+
+function getAnswer(dir, word) {
+  switch (dir) {
+    case "sq-fr":
+      return word.fr;
+    case "sq-de":
+      return word.de;
+    case "sq-en":
+      return word.en;
+    case "fr-sq":
+    case "de-sq":
+    case "en-sq":
+      return word.sq;
+    default:
+      return word.fr;
+  }
+}
+
+function mapCandidate(dir, word) {
+  switch (dir) {
+    case "sq-fr":
+    case "fr-sq":
+      return word.fr;
+    case "sq-de":
+    case "de-sq":
+      return word.de;
+    case "sq-en":
+    case "en-sq":
+      return word.en;
+    default:
+      return word.fr;
+  }
+}
 
 // ----------------------
 // Mode normal
 // ----------------------
 function startGame() {
   state.survival = false;
-  el.timer.classList.add("hidden");
+  if (el.timer) el.timer.classList.add("hidden");
 
   const dir = el.direction.value;
   const cat = el.category.value;
@@ -156,12 +301,12 @@ function startGame() {
 
   for (let i = 0; i < state.total; i++) {
     const target = state.pool[i];
-    const prompt = dir === "sq-fr" ? target.sq : target.fr;
-    const answer = dir === "sq-fr" ? target.fr : target.sq;
+    const prompt = getPrompt(dir, target);
+    const answer = getAnswer(dir, target);
     const others = pool.filter(v => v !== target);
     const candidates = shuffle(others)
       .slice(0, state.choiceCount - 1)
-      .map(v => (dir === "sq-fr" ? v.fr : v.sq));
+      .map(v => mapCandidate(dir, v));
     const options = shuffle([answer, ...candidates]);
     state.questions.push({ prompt, answer, options });
   }
@@ -217,13 +362,13 @@ function renderSurvivalQuestion() {
   const pool = state.pool;
 
   const target = pool[Math.floor(Math.random() * pool.length)];
-  const prompt = dir === "sq-fr" ? target.sq : target.fr;
-  const answer = dir === "sq-fr" ? target.fr : target.sq;
+  const prompt = getPrompt(dir, target);
+  const answer = getAnswer(dir, target);
 
   const others = pool.filter(v => v !== target);
   const candidates = shuffle(others)
     .slice(0, state.choiceCount - 1)
-    .map(v => (dir === "sq-fr" ? v.fr : v.sq));
+    .map(v => mapCandidate(dir, v));
 
   const options = shuffle([answer, ...candidates]);
 
@@ -407,7 +552,6 @@ function restart() {
   if (state.survival) startSurvival();
   else startGame();
 }
-
 // ----------------------
 // Utils
 // ----------------------
@@ -456,7 +600,9 @@ function createSnowflakes() {
 
 setInterval(createSnowflakes, 600);
 
-// 🎉 Confettis multicolores en fin de partie
+// ----------------------
+// Confettis 🎉
+// ----------------------
 function launchConfetti() {
   const colors = ["#ff0", "#f0f", "#0ff", "#0f0", "#f00", "#00f", "#ffa500"];
   const confettiContainer = document.body;
@@ -488,3 +634,13 @@ function launchConfetti() {
     }, duration * 1000 + 500);
   }
 }
+
+// ----------------------
+// Initialisation UI multilingue
+// ----------------------
+document.addEventListener("DOMContentLoaded", () => {
+  applyUI(uiLang);
+});
+// ----------------------
+// Fin du fichier app.js
+// ----------------------

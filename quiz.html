@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="title">Quiz Albanais – Multilingue</title>
+  <meta name="description" content="Quiz de vocabulaire albanais–français–allemand–anglais, choix multiple, score et progression." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="header">
+    <h1 data-i18n="header_title">Quiz Albanais – Multilingue</h1>
+    <p data-i18n="header_subtitle">Teste ton vocabulaire en albanais, français, allemand et anglais.</p>
+  </header>
+
+  <main class="container">
+
+    <!-- Paramètres -->
+    <section class="panel settings">
+
+      <div class="setting">
+        <label for="direction"><strong data-i18n="label_direction">Direction:</strong></label>
+        <select id="direction">
+          <option value="sq-fr">Albanais → Français</option>
+          <option value="fr-sq">Français → Albanais</option>
+          <option value="sq-de">Albanais → Allemand</option>
+          <option value="de-sq">Allemand → Albanais</option>
+          <option value="sq-en">Albanais → Anglais</option>
+          <option value="en-sq">Anglais → Albanais</option>
+        </select>
+      </div>
+
+      <div class="setting">
+        <label for="category"><strong data-i18n="label_category">Catégorie:</strong></label>
+        <select id="category">
+          <option value="all" data-i18n="cat_all">Toutes</option>
+          <option value="bases" data-i18n="cat_bases">Bases</option>
+          <option value="salutations" data-i18n="cat_salutations">Salutations</option>
+          <option value="nombres" data-i18n="cat_nombres">Nombres</option>
+          <option value="couleurs" data-i18n="cat_couleurs">Couleurs</option>
+          <option value="famille" data-i18n="cat_famille">Famille</option>
+          <option value="nourriture" data-i18n="cat_nourriture">Nourriture</option>
+          <option value="temps" data-i18n="cat_temps">Temps</option>
+        </select>
+      </div>
+
+      <div class="setting">
+        <label for="difficulty"><strong data-i18n="label_difficulty">Difficulté:</strong></label>
+        <select id="difficulty">
+          <option value="easy" data-i18n="diff_easy">Facile (3 choix)</option>
+          <option value="medium" data-i18n="diff_medium">Moyen (4 choix)</option>
+          <option value="hard" data-i18n="diff_hard">Difficile (5 choix)</option>
+        </select>
+      </div>
+
+      <button id="startBtn" class="btn primary" data-i18n="btn_start">Commencer</button>
+      <button id="survivalBtn" class="btn danger" data-i18n="btn_survival">Mode Survie</button>
+
+      <button onclick="window.location.href='index.html'" class="btn ghost" data-i18n="btn_back">Retour au menu</button>
+
+    </section>
+
+    <!-- Jeu -->
+    <section class="panel game hidden" id="gamePanel">
+
+      <div class="status">
+        <div><strong data-i18n="label_question">Question:</strong> <span id="qIndex">0</span>/<span id="qTotal">10</span></div>
+        <div><strong data-i18n="label_score">Score:</strong> <span id="score">0</span></div>
+        <div><strong data-i18n="label_best">Meilleur:</strong> <span id="best">0</span></div>
+      </div>
+
+      <!-- TIMER -->
+      <div id="timer" class="timer hidden" data-i18n="label_time">Temps : 5s</div>
+
+      <div class="question" id="questionText">…</div>
+      <ul class="choices" id="choices"></ul>
+
+      <div class="controls">
+        <button id="nextBtn" class="btn primary" data-i18n="btn_next">Suivant</button>
+        <button id="skipBtn" class="btn ghost" data-i18n="btn_skip">Passer</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+      <progress id="progress" value="0" max="10"></progress>
+
+    </section>
+
+    <!-- Résultats -->
+    <section class="panel results hidden" id="resultsPanel">
+      <h2 data-i18n="results_title">Bravo !</h2>
+      <p><strong data-i18n="results_score">Ton score:</strong> <span id="finalScore">0</span>/<span id="finalTotal">10</span></p>
+      <p id="bestMsg"></p>
+
+      <button id="restartBtn" class="btn primary" data-i18n="btn_restart">Rejouer</button>
+      <button onclick="window.location.href='index.html'" class="btn ghost" data-i18n="btn_back">Retour au menu</button>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <small>© 2025 Quiz Albanais Multilingue by MUSTAFI ALBAN</small>
+  </footer>
+
+  <!-- Effet de neige -->
+  <div class="snow"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

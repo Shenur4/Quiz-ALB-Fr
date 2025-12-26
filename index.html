@@ -1,96 +1,95 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ALBANAIS – FRANÇAIS Quiz</title>
-  <meta name="description" content="Quiz de vocabulaire albanais–français, choix multiple, score et progression." />
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Choisir la langue – Quiz Albanais</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    body {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .lang-title {
+      font-size: 2.2rem;
+      margin-bottom: 2rem;
+      font-weight: bold;
+    }
+
+    .flag-grid {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .flag-card {
+      width: 160px;
+      padding: 1rem;
+      border-radius: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .flag-card:hover {
+      transform: scale(1.08);
+      background: var(--primary-weak);
+    }
+
+    .flag-card img {
+      width: 80px;
+      height: 55px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+    }
+
+    .flag-label {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  </style>
 </head>
+
 <body>
-  <header class="header">
-    <h1>ALBANAIS – FRANÇAIS Quiz</h1>
-    <p>Teste ton vocabulaire, des bases aux thèmes du quotidien.</p>
-  </header>
 
-  <main class="container">
-    <!-- Paramètres -->
-    <section class="panel settings">
-      <div class="setting">
-        <label for="direction"><strong>Direction:</strong></label>
-        <select id="direction">
-          <option value="sq-fr">Albanais → Français</option>
-          <option value="fr-sq">Français → Albanais</option>
-        </select>
-      </div>
+  <h1 class="lang-title">Choisis ta langue d’apprentissage</h1>
+  <h2 class="lang-title">Zgjidh gjuhën që do të mësoni</h2>
+  <h3 class="lang-title">Wähle deine Lernsprache</h3>
 
-      <div class="setting">
-        <label for="category"><strong>Catégorie:</strong></label>
-        <select id="category">
-          <option value="all">Toutes</option>
-          <option value="bases">Bases</option>
-          <option value="salutations">Salutations</option>
-          <option value="nombres">Nombres</option>
-          <option value="couleurs">Couleurs</option>
-          <option value="famille">Famille</option>
-          <option value="nourriture">Nourriture</option>
-          <option value="temps">Temps</option>
-        </select>
-      </div>
+  <div class="flag-grid">
 
-      <div class="setting">
-        <label for="difficulty"><strong>Difficulté:</strong></label>
-        <select id="difficulty">
-          <option value="easy">Facile (3 choix)</option>
-          <option value="medium">Moyen (4 choix)</option>
-          <option value="hard">Difficile (5 choix)</option>
-        </select>
-      </div>
+    <!-- Albanais → Français -->
+    <div class="flag-card" onclick="start('sq-fr')">
+      <img src="flags/ALBANIE.png" alt="Albanais">
+      <img src="flags/france.png" alt="Français">
+      <div class="flag-label">Albanais → Français</div>
+    </div>
 
-      <button id="startBtn" class="btn primary">Commencer</button>
-      <button id="survivalBtn" class="btn danger">Mode Survie</button>
-    </section>
+    <!-- Albanais → Allemand -->
+    <div class="flag-card" onclick="start('sq-de')">
+      <img src="flags/ALBANIE.png" alt="Albanais">
+      <img src="flags/germany.png" alt="Allemand">
+      <div class="flag-label">Albanisch → Deutsch</div>
+    </div>
+    
+    <!-- Albanais → Anglais-->
+    <div class="flag-card" onclick="start('sq-en')">
+      <img src="flags/ALBANIE.png" alt="Albanais">
+      <img src="flags/uk.png" alt="Anglais">
+      <div class="flag-label">Shqip → English</div>
 
-    <!-- Jeu -->
-    <section class="panel game hidden" id="gamePanel">
-      <div class="status">
-        <div><strong>Question:</strong> <span id="qIndex">0</span>/<span id="qTotal">10</span></div>
-        <div><strong>Score:</strong> <span id="score">0</span></div>
-        <div><strong>Meilleur:</strong> <span id="best">0</span></div>
-      </div>
+  </div>
 
-      <!-- TIMER -->
-      <div id="timer" class="timer hidden">Temps : 5s</div>
+  <script>
+    function start(direction) {
+      window.location.href = "quiz.html?dir=" + direction;
+    }
+  </script>
 
-      <div class="question" id="questionText">…</div>
-      <ul class="choices" id="choices"></ul>
-
-      <div class="controls">
-        <button id="nextBtn" class="btn primary">Suivant</button>
-        <button id="skipBtn" class="btn ghost">Passer</button>
-      </div>
-
-      <div class="feedback" id="feedback"></div>
-      <progress id="progress" value="0" max="10"></progress>
-    </section>
-
-    <!-- Résultats -->
-    <section class="panel results hidden" id="resultsPanel">
-      <h2>Bravo !</h2>
-      <p><strong>Ton score:</strong> <span id="finalScore">0</span>/<span id="finalTotal">10</span></p>
-      <p id="bestMsg"></p>
-      <button id="restartBtn" class="btn primary">Rejouer</button>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <small>© 2025 Quiz Albanais–Français by MUSTAFI ALBAN</small>
-  </footer>
-
-  <!-- Conteneur pour la neige -->
-  <div class="snow"></div>
-
-  <script src="app.js"></script>
 </body>
-
 </html>
