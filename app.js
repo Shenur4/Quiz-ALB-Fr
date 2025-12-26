@@ -171,7 +171,7 @@ const selectedDir = params.get("dir");
 const uiLang = selectedDir ? selectedDir.split("-")[1] : "fr";
 
 // ----------------------
-// FLASHCARDS
+// FLASHCARDS (flip + audio)
 // ----------------------
 const flashPanel = document.getElementById("flashPanel");
 const flashCard = document.getElementById("flashCard");
@@ -197,14 +197,100 @@ function loadFlashcard() {
   flashBack.textContent = getAnswer(dir, word);
 
   flashCard.classList.remove("flip");
+
+  // Lecture automatique du recto
+  const lang = getVoiceLang(dir);
+  speak(flashFront.textContent, lang);
 }
 
+// 👉 IMPORTANT : un seul event listener pour gérer flip + audio
 flashCard.addEventListener("click", () => {
   flashCard.classList.toggle("flip");
+
+  const dir = el.direction.value;
+  const lang = getVoiceLang(dir);
+
+  if (flashCard.classList.contains("flip")) {
+    speak(flashBack.textContent, lang);
+  } else {
+    speak(flashFront.textContent, lang);
+  }
 });
 
 flashNext.addEventListener("click", loadFlashcard);
 flashBtn.addEventListener("click", startFlashcards);
+
+// ----------------------
+// MODE AUDIO 🔊
+// ----------------------
+
+// Détection automatique de la langue selon la direction
+function getVoiceLang(dir) {
+  switch (dir) {
+    case "sq-fr":
+    case "sq-de":
+    case "sq-en":
+      return "sq-AL"; // Albanais
+    case "fr-sq":
+      return "fr-FR"; // Français
+    case "de-sq":
+      return "de-DE"; // Allemand
+    case "en-sq":
+      return "en-US"; // Anglais
+    default:
+      return "sq-AL";
+  }
+}
+
+// Fonction de lecture
+function speak(text, lang) {
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = lang;
+  speechSynthesis.cancel(); // stop previous speech
+  speechSynthesis.speak(utter);
+}
+
+// Bouton écouter dans le quiz
+const listenBtn = document.getElementById("listenBtn");
+
+if (listenBtn) {
+  listenBtn.addEventListener("click", () => {
+    const dir = el.direction.value;
+    const q = state.survival ? state.currentQuestion : state.questions[state.currentIdx];
+    const lang = getVoiceLang(dir);
+    speak(q.prompt, lang);
+  });
+}
+
+// Lecture automatique à chaque nouvelle question
+function autoSpeakQuestion() {
+  const dir = el.direction.value;
+  const q = state.survival ? state.currentQuestion : state.questions[state.currentIdx];
+  const lang = getVoiceLang(dir);
+  speak(q.prompt, lang);
+}
+
+// Injection dans le quiz
+const oldRenderQuestion = renderQuestion;
+renderQuestion = function () {
+  oldRenderQuestion();
+  autoSpeakQuestion();
+};
+
+const oldRenderSurvival = renderSurvivalQuestion;
+renderSurvivalQuestion = function () {
+  oldRenderSurvival();
+  autoSpeakQuestion();
+};
+
+// Lecture automatique à chaque nouvelle flashcard
+const oldLoadFlashcard = loadFlashcard;
+loadFlashcard = function () {
+  oldLoadFlashcard();
+  const dir = el.direction.value;
+  const lang = getVoiceLang(dir);
+  speak(flashFront.textContent, lang);
+};
 
 document.addEventListener("DOMContentLoaded", () => applyUI(uiLang));
 // ----------------------
