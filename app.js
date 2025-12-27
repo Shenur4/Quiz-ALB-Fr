@@ -164,19 +164,22 @@ function applyUI(lang) {
   });
 }
 
+// Lire ?dir=sq-fr
 const params = new URLSearchParams(window.location.search);
-const selectedDir = params.get("dir");// Synchroniser le menu déroulant avec la langue choisie dans index.html
-if (selectedDir) {
-  const dirSelect = document.getElementById("direction");
-  if (dirSelect) {
-    const option = [...dirSelect.options].find(o => o.value === selectedDir);
-    if (option) dirSelect.value = selectedDir;
-  }
-}
+const selectedDir = params.get("dir");
 const uiLang = selectedDir ? selectedDir.split("-")[1] : "fr";
 
+// Synchroniser le menu déroulant
+document.addEventListener("DOMContentLoaded", () => {
+  const dirSelect = document.getElementById("direction");
+  if (dirSelect && selectedDir) {
+    const opt = [...dirSelect.options].find(o => o.value === selectedDir);
+    if (opt) dirSelect.value = selectedDir;
+  }
+});
+
 // ----------------------
-// Constantes / état / éléments
+// État global
 // ----------------------
 const BEST_KEY = "best_score";
 const SURVIVAL_BEST_KEY = "survival_best_score";
@@ -194,6 +197,9 @@ const state = {
   currentQuestion: null
 };
 
+// ----------------------
+// Sélecteurs
+// ----------------------
 const el = {
   direction: document.getElementById("direction"),
   category: document.getElementById("category"),
@@ -234,7 +240,7 @@ const el = {
 };
 
 // ----------------------
-// Mapping direction → champ source / cible
+// Mapping direction → champs
 // ----------------------
 function getPrompt(dir, word) {
   switch (dir) {
@@ -244,7 +250,6 @@ function getPrompt(dir, word) {
     case "de-sq": return word.de;
     case "sq-en": return word.sq;
     case "en-sq": return word.en;
-    default: return word.sq;
   }
 }
 
@@ -256,79 +261,70 @@ function getAnswer(dir, word) {
     case "de-sq": return word.sq;
     case "sq-en": return word.en;
     case "en-sq": return word.sq;
-    default: return word.fr;
   }
 }
 
 // ======================================================
-// AUDIO INTELLIGENT (voix automatiques)
+// VOIX INTELLIGENTES (PC = albanais, mobile = turc)
 // ======================================================
-let bestGermanVoice = null;
-let bestEnglishVoice = null;
 
-function initVoices() {
-  const voices = speechSynthesis.getVoices();
-
-  bestGermanVoice =
-    voices.find(v => v.name.includes("Katja")) ||
-    voices.find(v => v.name.includes("Conrad")) ||
-    voices.find(v => v.name.includes("Google") && v.lang === "de-DE") ||
-    voices.find(v => v.lang === "de-DE") || null;
-
-  bestEnglishVoice =
-    voices.find(v => v.name.includes("Microsoft") && v.lang === "en-US") ||
-    voices.find(v => v.name.includes("Google") && v.lang === "en-US") ||
-    voices.find(v => v.lang === "en-US") ||
-    voices.find(v => v.lang === "en-GB") || null;
+function detectPlatform() {
+  const ua = navigator.userAgent;
+  return {
+    isWindows: ua.includes("Windows"),
+    isMobile: ua.includes("Android") || ua.includes("iPhone") || ua.includes("iPad")
+  };
 }
-
-speechSynthesis.onvoiceschanged = initVoices;
 
 function getVoiceLangPrompt(dir) {
-  switch (dir) {
-    case "sq-fr":
-    case "sq-de":
-    case "sq-en":
-      return "sq-AL";
-    case "fr-sq":
-      return "fr-FR";
-    case "de-sq":
-      return "de-DE";
-    case "en-sq":
-      return "en-US";
+  const { isWindows, isMobile } = detectPlatform();
+
+  // Si la langue source est l'albanais
+  if (dir.startsWith("sq-")) {
+    if (isWindows) return "sq-AL";   // PC → vraie voix albanaise
+    if (isMobile) return "tr-TR";    // Mobile → voix turque (bien meilleure)
   }
+
+  // Sinon, langue source normale
+  switch (dir) {
+    case "fr-sq": return "fr-FR";
+    case "de-sq": return "de-DE";
+    case "en-sq": return "en-US";
+  }
+
+  return "sq-AL"; // fallback propre
 }
 
 function getVoiceLangAnswer(dir) {
-  switch (dir) {
-    case "sq-fr":
-      return "fr-FR";
-    case "sq-de":
-      return "de-DE";
-    case "sq-en":
-      return "en-US";
-    case "fr-sq":
-    case "de-sq":
-    case "en-sq":
-      return "sq-AL";
+  const { isWindows, isMobile } = detectPlatform();
+
+  // Si la langue cible est l'albanais
+  if (dir.endsWith("-sq")) {
+    if (isWindows) return "sq-AL";   // PC → vraie voix albanaise
+    if (isMobile) return "tr-TR";    // Mobile → voix turque (bien meilleure)
   }
+
+  // Sinon, langue cible normale
+  switch (dir) {
+    case "sq-fr": return "fr-FR";
+    case "sq-de": return "de-DE";
+    case "sq-en": return "en-US";
+  }
+
+  return "sq-AL"; // fallback propre
 }
 
+// Synthèse vocale
 function speak(text, lang) {
   const utter = new SpeechSynthesisUtterance(text);
   const voices = speechSynthesis.getVoices();
 
-  if (lang === "de-DE" && bestGermanVoice) {
-    utter.voice = bestGermanVoice;
-    utter.rate = 0.9;
-    utter.pitch = 0.95;
-  } else if (lang === "en-US" && bestEnglishVoice) {
-    utter.voice = bestEnglishVoice;
-    utter.rate = 0.95;
-    utter.pitch = 1.0;
-  } else {
-    utter.voice = voices.find(v => v.lang === lang) || null;
-  }
+  // Choix intelligent de la voix
+  utter.voice = voices.find(v => v.lang === lang) || null;
+
+  // Ajustements pour améliorer la prononciation
+  utter.rate = 0.9;
+  utter.pitch = 1.0;
 
   speechSynthesis.cancel();
   speechSynthesis.speak(utter);
@@ -658,6 +654,7 @@ function restart() {
   if (state.survival) startSurvival();
   else startGame();
 }
+
 // ======================================================
 // EFFETS VISUELS (NEIGE + CONFETTIS)
 // ======================================================
