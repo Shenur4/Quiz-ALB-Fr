@@ -265,10 +265,9 @@ function getAnswer(dir, word) {
 }
 
 // ======================================================
-// VOIX INTELLIGENTES (PC = albanais natif, mobile = anglais)
-// + ACCENT NEUTRE OPTIMISÉ (INTENSITÉ MOYENNE)
-// + SYLLABIFICATION AUTOMATIQUE
-// + MODE NATIF SIMULÉ (ALBANAIS UNIQUEMENT)
+// VERSION STABLE (RECOMMANDÉE)
+// PC = voix albanaise native (aucune correction)
+// Mobile = voix anglaise + corrections phonétiques simples
 // ======================================================
 
 function detectPlatform() {
@@ -279,7 +278,6 @@ function detectPlatform() {
   };
 }
 
-// Toujours renvoyer sq-AL pour l’albanais (PC + mobile)
 function getVoiceLangPrompt(dir) {
   if (dir.startsWith("sq-")) return "sq-AL";
   switch (dir) {
@@ -301,66 +299,7 @@ function getVoiceLangAnswer(dir) {
 }
 
 // ======================================================
-// SYLLABIFICATION ALBANAISE
-// ======================================================
-function syllabify(word) {
-  const vowels = "aeëiouyAEËIOUY";
-  const digrams = ["gj","ll","rr","xh","zh","nj","Gj","Ll","Rr","Xh","Zh","Nj"];
-
-  let parts = [];
-  let current = "";
-
-  for (let i = 0; i < word.length; i++) {
-    let two = word.slice(i, i+2);
-
-    if (digrams.includes(two)) {
-      current += two;
-      i++;
-      continue;
-    }
-
-    current += word[i];
-
-    if (vowels.includes(word[i])) {
-      parts.push(current);
-      current = "";
-    }
-  }
-
-  if (current) parts.push(current);
-  return parts;
-}
-
-// ======================================================
-// ACCENT TONIQUE NEUTRE (INTENSITÉ MOYENNE)
-// ======================================================
-function applyAccentNeutral(word) {
-  const syll = syllabify(word);
-  if (syll.length <= 1) return word;
-
-  let accentIndex = syll.length - 2;
-
-  if (word.endsWith("ë") && syll.length > 2) {
-    accentIndex = syll.length - 3;
-  }
-
-  syll[accentIndex] = syll[accentIndex].replace(/([aeiouy])/i, "$1$1");
-
-  return syll.join(" ");
-}
-
-// ======================================================
-// MODE NATIF SIMULÉ (INTENSITÉ MOYENNE)
-// ======================================================
-function simulateNative(text) {
-  return text
-    .split(" ")
-    .map(w => applyAccentNeutral(w))
-    .join("  ");
-}
-
-// ======================================================
-// CORRECTIONS PHONÉTIQUES (MOBILE UNIQUEMENT)
+// CORRECTIONS PHONÉTIQUES SIMPLES (MOBILE UNIQUEMENT)
 // ======================================================
 function fixAlbanianPhonetics(text) {
   let t = text.normalize("NFC");
@@ -374,16 +313,13 @@ function fixAlbanianPhonetics(text) {
   t = t.replace(/q/g, "tch").replace(/Q/g, "Tch");
   t = t.replace(/ç/g, "tch").replace(/Ç/g, "Tch");
 
-  t = t.replace(/ll/g, "l").replace(/Ll/g, "L");
-  t = t.replace(/rr/g, "r").replace(/Rr/g, "R");
-
   t = t.replace(/ë/g, "e").replace(/Ë/g, "E");
 
   return t;
 }
 
 // ======================================================
-// Synthèse vocale
+// Synthèse vocale STABLE
 // ======================================================
 function speak(text, lang) {
   const { isWindows, isMobile } = detectPlatform();
@@ -391,11 +327,10 @@ function speak(text, lang) {
 
   let processedText = text;
 
-  if (isAlbanian) {
-    if (isMobile) {
-      processedText = fixAlbanianPhonetics(text);
-      processedText = simulateNative(processedText);
-    }
+  // PC → texte original
+  // Mobile → corrections phonétiques simples
+  if (isAlbanian && isMobile) {
+    processedText = fixAlbanianPhonetics(text);
   }
 
   const utter = new SpeechSynthesisUtterance(processedText);
@@ -838,6 +773,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
 
 
 
