@@ -265,8 +265,8 @@ function getAnswer(dir, word) {
 }
 
 // ======================================================
-// VOIX INTELLIGENTES (PC = albanais, mobile = anglais)
-// + CORRECTIONS PHONÉTIQUES ALBANAIS
+// VOIX INTELLIGENTES (PC = albanais natif, mobile = anglais)
+// + CORRECTIONS PHONÉTIQUES ALBANAIS (MOBILE SEULEMENT)
 // ======================================================
 
 function detectPlatform() {
@@ -277,67 +277,51 @@ function detectPlatform() {
   };
 }
 
+// Toujours renvoyer sq-AL pour l'albanais (PC + mobile)
 function getVoiceLangPrompt(dir) {
-  const { isWindows, isMobile } = detectPlatform();
+  if (dir.startsWith("sq-")) return "sq-AL";
 
-  // Si la langue source est l'albanais
-  if (dir.startsWith("sq-")) {
-    if (isWindows) return "sq-AL";   // PC → vraie voix albanaise
-    if (isMobile) return "en-US";    // Mobile → anglais (toujours installé)
-  }
-
-  // Sinon, langue source normale
   switch (dir) {
     case "fr-sq": return "fr-FR";
     case "de-sq": return "de-DE";
     case "en-sq": return "en-US";
   }
-
   return "sq-AL";
 }
 
 function getVoiceLangAnswer(dir) {
-  const { isWindows, isMobile } = detectPlatform();
+  if (dir.endsWith("-sq")) return "sq-AL";
 
-  // Si la langue cible est l'albanais
-  if (dir.endsWith("-sq")) {
-    if (isWindows) return "sq-AL";   // PC → vraie voix albanaise
-    if (isMobile) return "en-US";    // Mobile → anglais (toujours installé)
-  }
-
-  // Sinon, langue cible normale
   switch (dir) {
     case "sq-fr": return "fr-FR";
     case "sq-de": return "de-DE";
     case "sq-en": return "en-US";
   }
-
   return "sq-AL";
 }
 
 // ======================================================
-// CORRECTIONS PHONÉTIQUES POUR L'ALBANAIS
-// (utilisées uniquement sur mobile, pas sur PC)
+// CORRECTIONS PHONÉTIQUES POUR L'ALBANAIS (MOBILE SEULEMENT)
 // ======================================================
 function fixAlbanianPhonetics(text) {
-  let t = text;
+  let t = text.normalize("NFC");
 
-  // Digrammes (ordre important)
-  t = t.replace(/gj/g, "dji");
-  t = t.replace(/xh/g, "dj");
-  t = t.replace(/zh/g, "j");
+  // Digrammes
+  t = t.replace(/gj/g, "dji").replace(/Gj/g, "Dji");
+  t = t.replace(/xh/g, "dj").replace(/Xh/g, "Dj");
+  t = t.replace(/zh/g, "j").replace(/Zh/g, "J");
 
-  // j → y (après les digrammes)
-  t = t.replace(/j/g, "y");
+  // j → y
+  t = t.replace(/j/g, "y").replace(/J/g, "Y");
 
   // Sons simples
-  t = t.replace(/q/g, "tch");
-  t = t.replace(/ç/g, "tch");
-  t = t.replace(/ll/g, "l");
-  t = t.replace(/rr/g, "r");
+  t = t.replace(/q/g, "tch").replace(/Q/g, "Tch");
+  t = t.replace(/ç/g, "tch").replace(/Ç/g, "Tch");
+  t = t.replace(/ll/g, "l").replace(/Ll/g, "L");
+  t = t.replace(/rr/g, "r").replace(/Rr/g, "R");
 
-  // Optionnel : ë → e
-  t = t.replace(/ë/g, "e");
+  // ë → e
+  t = t.replace(/ë/g, "e").replace(/Ë/g, "E");
 
   return t;
 }
@@ -349,30 +333,33 @@ function speak(text, lang) {
   const { isWindows, isMobile } = detectPlatform();
   const isAlbanian = lang.startsWith("sq");
 
-  // Sur PC avec vraie voix albanaise → texte brut
-  // Sur mobile (anglais) → texte corrigé phonétiquement
+  // PC → texte original (aucune correction)
+  // Mobile → corrections phonétiques
   const processedText =
     isAlbanian && isMobile ? fixAlbanianPhonetics(text) : text;
 
   const utter = new SpeechSynthesisUtterance(processedText);
   const voices = speechSynthesis.getVoices();
 
-  // Choix de la voix
-  let voice = voices.find(v => v.lang === lang);
+  let voice = null;
 
-  // Si on demande sq-AL mais qu'il n'existe pas → fallback anglais
-  if (!voice && isAlbanian) {
-    voice = voices.find(v => v.lang.startsWith("en"));
+  if (isAlbanian) {
+    // 1. Essayer vraie voix albanaise
+    voice = voices.find(v => v.lang === "sq-AL");
+
+    // 2. Si absente (mobile) → fallback anglais
+    if (!voice) {
+      voice = voices.find(v => v.lang === "en-US")
+           || voices.find(v => v.lang.startsWith("en"));
+    }
+  } else {
+    voice = voices.find(v => v.lang === lang)
+         || voices.find(v => v.lang.startsWith(lang.split("-")[0]));
   }
 
-  // Fallback ultime : première voix dispo
-  if (!voice) {
-    voice = voices[0] || null;
-  }
+  if (!voice) voice = voices[0] || null;
 
   utter.voice = voice;
-
-  // Ajustements pour améliorer la prononciation
   utter.rate = 0.9;
   utter.pitch = 1.0;
 
@@ -794,6 +781,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
 
 
 
