@@ -301,18 +301,44 @@ function getVoiceLangAnswer(dir) {
 // ======================================================
 // CORRECTIONS PHONÉTIQUES SIMPLES (MOBILE UNIQUEMENT)
 // ======================================================
+
 function fixAlbanianPhonetics(text) {
   let t = text.normalize("NFC");
 
+  // 1) Cas spécial iPhone : "më" → "me"
+  t = t.replace(/\bmë\b/g, "me");
+  t = t.replace(/\bMë\b/g, "Me");
+
+  // 2) ë final = muet total (IMPORTANT)
+  t = t.replace(/ë\b/g, "");
+  t = t.replace(/Ë\b/g, "");
+
+  // 3) Digrammes
   t = t.replace(/gj/g, "dji").replace(/Gj/g, "Dji");
   t = t.replace(/xh/g, "dj").replace(/Xh/g, "Dj");
   t = t.replace(/zh/g, "j").replace(/Zh/g, "J");
 
+  // 4) j → y
   t = t.replace(/j/g, "y").replace(/J/g, "Y");
 
+  // 5) q / ç → tch
   t = t.replace(/q/g, "tch").replace(/Q/g, "Tch");
   t = t.replace(/ç/g, "tch").replace(/Ç/g, "Tch");
 
+  // 6) ll / rr
+  t = t.replace(/ll/g, "l").replace(/Ll/g, "L");
+  t = t.replace(/rr/g, "r").replace(/Rr/g, "R");
+
+  // 7) dh → d
+  t = t.replace(/dh/g, "d").replace(/Dh/g, "D");
+
+  // 8) nj → ny
+  t = t.replace(/nj/g, "ny").replace(/Nj/g, "Ny");
+
+  // 9) shq → shk (améliore shqip, shqipëri…)
+  t = t.replace(/shq/g, "shk").replace(/Shq/g, "Shk");
+
+  // 10) ë interne → e
   t = t.replace(/ë/g, "e").replace(/Ë/g, "E");
 
   return t;
@@ -773,6 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
 
 
 
