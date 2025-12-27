@@ -266,7 +266,9 @@ function getAnswer(dir, word) {
 
 // ======================================================
 // VOIX INTELLIGENTES (PC = albanais natif, mobile = anglais)
-// + CORRECTIONS PHONÉTIQUES ALBANAIS (MOBILE SEULEMENT)
+// + ACCENT NEUTRE OPTIMISÉ (INTENSITÉ MOYENNE)
+// + SYLLABIFICATION AUTOMATIQUE
+// + MODE NATIF SIMULÉ (ALBANAIS UNIQUEMENT)
 // ======================================================
 
 function detectPlatform() {
@@ -277,10 +279,9 @@ function detectPlatform() {
   };
 }
 
-// Toujours renvoyer sq-AL pour l'albanais (PC + mobile)
+// Toujours renvoyer sq-AL pour l’albanais (PC + mobile)
 function getVoiceLangPrompt(dir) {
   if (dir.startsWith("sq-")) return "sq-AL";
-
   switch (dir) {
     case "fr-sq": return "fr-FR";
     case "de-sq": return "de-DE";
@@ -291,7 +292,6 @@ function getVoiceLangPrompt(dir) {
 
 function getVoiceLangAnswer(dir) {
   if (dir.endsWith("-sq")) return "sq-AL";
-
   switch (dir) {
     case "sq-fr": return "fr-FR";
     case "sq-de": return "de-DE";
@@ -301,42 +301,102 @@ function getVoiceLangAnswer(dir) {
 }
 
 // ======================================================
-// CORRECTIONS PHONÉTIQUES POUR L'ALBANAIS (MOBILE SEULEMENT)
+// SYLLABIFICATION ALBANAISE
+// ======================================================
+function syllabify(word) {
+  const vowels = "aeëiouyAEËIOUY";
+  const digrams = ["gj","ll","rr","xh","zh","nj","Gj","Ll","Rr","Xh","Zh","Nj"];
+
+  let parts = [];
+  let current = "";
+
+  for (let i = 0; i < word.length; i++) {
+    let two = word.slice(i, i+2);
+
+    if (digrams.includes(two)) {
+      current += two;
+      i++;
+      continue;
+    }
+
+    current += word[i];
+
+    if (vowels.includes(word[i])) {
+      parts.push(current);
+      current = "";
+    }
+  }
+
+  if (current) parts.push(current);
+  return parts;
+}
+
+// ======================================================
+// ACCENT TONIQUE NEUTRE (INTENSITÉ MOYENNE)
+// ======================================================
+function applyAccentNeutral(word) {
+  const syll = syllabify(word);
+  if (syll.length <= 1) return word;
+
+  let accentIndex = syll.length - 2;
+
+  if (word.endsWith("ë") && syll.length > 2) {
+    accentIndex = syll.length - 3;
+  }
+
+  syll[accentIndex] = syll[accentIndex].replace(/([aeiouy])/i, "$1$1");
+
+  return syll.join(" ");
+}
+
+// ======================================================
+// MODE NATIF SIMULÉ (INTENSITÉ MOYENNE)
+// ======================================================
+function simulateNative(text) {
+  return text
+    .split(" ")
+    .map(w => applyAccentNeutral(w))
+    .join("  ");
+}
+
+// ======================================================
+// CORRECTIONS PHONÉTIQUES (MOBILE UNIQUEMENT)
 // ======================================================
 function fixAlbanianPhonetics(text) {
   let t = text.normalize("NFC");
 
-  // Digrammes
   t = t.replace(/gj/g, "dji").replace(/Gj/g, "Dji");
   t = t.replace(/xh/g, "dj").replace(/Xh/g, "Dj");
   t = t.replace(/zh/g, "j").replace(/Zh/g, "J");
 
-  // j → y
   t = t.replace(/j/g, "y").replace(/J/g, "Y");
 
-  // Sons simples
   t = t.replace(/q/g, "tch").replace(/Q/g, "Tch");
   t = t.replace(/ç/g, "tch").replace(/Ç/g, "Tch");
+
   t = t.replace(/ll/g, "l").replace(/Ll/g, "L");
   t = t.replace(/rr/g, "r").replace(/Rr/g, "R");
 
-  // ë → e
   t = t.replace(/ë/g, "e").replace(/Ë/g, "E");
 
   return t;
 }
 
 // ======================================================
-// Synthèse vocale améliorée
+// Synthèse vocale
 // ======================================================
 function speak(text, lang) {
   const { isWindows, isMobile } = detectPlatform();
   const isAlbanian = lang.startsWith("sq");
 
-  // PC → texte original (aucune correction)
-  // Mobile → corrections phonétiques
-  const processedText =
-    isAlbanian && isMobile ? fixAlbanianPhonetics(text) : text;
+  let processedText = text;
+
+  if (isAlbanian) {
+    if (isMobile) {
+      processedText = fixAlbanianPhonetics(text);
+      processedText = simulateNative(processedText);
+    }
+  }
 
   const utter = new SpeechSynthesisUtterance(processedText);
   const voices = speechSynthesis.getVoices();
@@ -344,10 +404,7 @@ function speak(text, lang) {
   let voice = null;
 
   if (isAlbanian) {
-    // 1. Essayer vraie voix albanaise
     voice = voices.find(v => v.lang === "sq-AL");
-
-    // 2. Si absente (mobile) → fallback anglais
     if (!voice) {
       voice = voices.find(v => v.lang === "en-US")
            || voices.find(v => v.lang.startsWith("en"));
@@ -781,6 +838,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
 
 
 
