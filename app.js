@@ -313,32 +313,59 @@ function fixAlbanianPhonetics(text) {
   t = t.replace(/ë\b/g, "");
   t = t.replace(/Ë\b/g, "");
 
-  // 3) Digrammes
+  // 3) dja → dya (corrige djalë)
+  t = t.replace(/\bdja/g, "dya").replace(/\bDja/g, "Dya");
+
+  // 4) një → nye (évite "nai")
+  t = t.replace(/\bnjë\b/g, "nye").replace(/\bNjë\b/g, "Nye");
+
+  // 5) ujë → ouy (évite "olaï")
+  t = t.replace(/\buj\b/g, "ouy").replace(/\bUj\b/g, "Ouy");
+
+  // 6) tetë → tet (évite "ti")
+  t = t.replace(/\btet\b/g, "tet").replace(/\bTet\b/g, "Tet");
+
+  // 7) nentë → nent (évite "ntéée")
+  t = t.replace(/\bnent\b/g, "nent").replace(/\bNent\b/g, "Nent");
+
+  // 8) përshëndetje → pershendetye (corrige "pershendetaj")
+  t = t.replace(/tje/g, "tye").replace(/Tje/g, "Tye");
+
+  // 9) bukë → book (évite "bjuk")
+  t = t.replace(/\bbuk/g, "book").replace(/\bBuk/g, "Book");
+
+  // 10) gjy → djy (corrige "daesh")
+  t = t.replace(/gjy/g, "djy").replace(/Gjy/g, "Djy");
+
+  // 11) jeshile → yeshi-lé (évite "jeshail")
+  t = t.replace(/ile\b/g, "ilé").replace(/Ile\b/g, "Ilé");
+
+  // 12) shq → shk (corrige shqip, shqipëri…)
+  t = t.replace(/shq/g, "shk").replace(/Shq/g, "Shk");
+
+  // 13) Digrammes généraux
   t = t.replace(/gj/g, "dji").replace(/Gj/g, "Dji");
   t = t.replace(/xh/g, "dj").replace(/Xh/g, "Dj");
   t = t.replace(/zh/g, "j").replace(/Zh/g, "J");
 
-  // 4) j → y
+  // 14) j → y
   t = t.replace(/j/g, "y").replace(/J/g, "Y");
 
-  // 5) q / ç → tch
+  // 15) q / ç → tch
   t = t.replace(/q/g, "tch").replace(/Q/g, "Tch");
   t = t.replace(/ç/g, "tch").replace(/Ç/g, "Tch");
 
-  // 6) ll / rr
+  // 16) ll / rr
   t = t.replace(/ll/g, "l").replace(/Ll/g, "L");
   t = t.replace(/rr/g, "r").replace(/Rr/g, "R");
 
-  // 7) dh → d
+  // 17) dh → d
   t = t.replace(/dh/g, "d").replace(/Dh/g, "D");
 
-  // 8) nj → ny
+  // 18) nj → ny (général)
   t = t.replace(/nj/g, "ny").replace(/Nj/g, "Ny");
 
-  // 9) shq → shk (améliore shqip, shqipëri…)
-  t = t.replace(/shq/g, "shk").replace(/Shq/g, "Shk");
-
-  // 10) ë interne → e
+  // 19) ë interne → e
   t = t.replace(/ë/g, "e").replace(/Ë/g, "E");
 
   return t;
@@ -799,6 +826,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
 
 
 
