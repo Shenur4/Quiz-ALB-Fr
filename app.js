@@ -266,8 +266,10 @@ function getAnswer(dir, word) {
 
 // ======================================================
 // VOIX INTELLIGENTES (PC = albanais, mobile = serbe)
+// + CORRECTIONS PHONÉTIQUES ALBANAIS
 // ======================================================
 
+// Détection plateforme
 function detectPlatform() {
   const ua = navigator.userAgent;
   return {
@@ -276,6 +278,7 @@ function detectPlatform() {
   };
 }
 
+// Choix de la langue de la voix pour la question
 function getVoiceLangPrompt(dir) {
   const { isWindows, isMobile } = detectPlatform();
 
@@ -295,6 +298,7 @@ function getVoiceLangPrompt(dir) {
   return "sq-AL"; // fallback propre
 }
 
+// Choix de la langue de la voix pour la réponse
 function getVoiceLangAnswer(dir) {
   const { isWindows, isMobile } = detectPlatform();
 
@@ -314,9 +318,37 @@ function getVoiceLangAnswer(dir) {
   return "sq-AL"; // fallback propre
 }
 
-// Synthèse vocale
+// ======================================================
+// CORRECTIONS PHONÉTIQUES POUR L'ALBANAIS
+// ======================================================
+function fixAlbanianPhonetics(text) {
+  let t = text;
+
+  // Digrammes (ordre important)
+  t = t.replace(/gj/g, "dji");
+  t = t.replace(/xh/g, "dj");
+  t = t.replace(/zh/g, "j");
+
+  // Sons simples
+  t = t.replace(/q/g, "tch");
+  t = t.replace(/ç/g, "tch");
+  t = t.replace(/ll/g, "l");
+  t = t.replace(/rr/g, "r");
+
+  // Optionnel : ë → e
+  t = t.replace(/ë/g, "e");
+
+  return t;
+}
+
+// ======================================================
+// Synthèse vocale améliorée
+// ======================================================
 function speak(text, lang) {
-  const utter = new SpeechSynthesisUtterance(text);
+  // Correction phonétique uniquement si on lit de l'albanais
+  const processedText = lang.startsWith("sq") ? fixAlbanianPhonetics(text) : text;
+
+  const utter = new SpeechSynthesisUtterance(processedText);
   const voices = speechSynthesis.getVoices();
 
   // Choix intelligent de la voix
@@ -744,4 +776,5 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
 
