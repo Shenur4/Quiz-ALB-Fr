@@ -43,7 +43,7 @@ const VOCAB = [
   { sq: "bardhë", fr: "blanc", de: "weiß", en: "white", cat: "couleurs" },
   { sq: "zezë", fr: "noir", de: "schwarz", en: "black", cat: "couleurs" },
   { sq: "mavi", fr: "bleu", de: "blau", en: "blue", cat: "couleurs" },
-  { sq: "jeshile", fr: "vert", de: "grün", en: "green", cat: "couleurs" },
+  { sq: "jeshil", fr: "vert", de: "grün", en: "green", cat: "couleurs" },
   { sq: "sari", fr: "jaune", de: "gelb", en: "yellow", cat: "couleurs" },
   { sq: "portokall", fr: "orange", de: "orange", en: "orange", cat: "couleurs" },
   { sq: "pembe", fr: "rose", de: "rosa", en: "pink", cat: "couleurs" },
@@ -306,78 +306,94 @@ function fixAlbanianPhonetics(text) {
   let t = text.normalize("NFC");
 
   // 1) Empêcher A → EY (iPhone)
-  // A isolé ou début de mot → Aa
   t = t.replace(/\ba/g, "aa").replace(/\bA/g, "Aa");
-
-  // A après consonne → Ah
   t = t.replace(/([bcdfghjklmnpqrstvwxyz])a/g, "$1ah");
   t = t.replace(/([BCDFGHJKLMNPQRSTVWXYZ])A/g, "$1Ah");
 
-  // 2) Cas spécial iPhone : "më" → "me"
-  t = t.replace(/\bmë\b/g, "me");
-  t = t.replace(/\bMë\b/g, "Me");
+  // 2) më → me
+  t = t.replace(/\bmë\b/g, "me").replace(/\bMë\b/g, "Me");
 
-  // 3) ë final = muet total
-  t = t.replace(/ë\b/g, "");
-  t = t.replace(/Ë\b/g, "");
+  // 3) ë final muet
+  t = t.replace(/ë\b/g, "").replace(/Ë\b/g, "");
 
-  // 4) dy → deu (prononciation correcte du chiffre 2)
+  // 4) dy → deu
   t = t.replace(/\bdy\b/g, "deu").replace(/\bDy\b/g, "Deu");
   t = t.replace(/dy([a-z])/g, "deu$1").replace(/Dy([A-Z])/g, "Deu$1");
 
-  // 5) dja → dya (corrige djalë)
+  // 5) gjashtë → djasht
+  t = t.replace(/\bgjas/g, "djas").replace(/\bGjas/g, "Djas");
+
+  // 6) motër → motr
+  t = t.replace(/\bmot[eë]r\b/g, "motr").replace(/\bMot[eë]r\b/g, "Motr");
+
+  // 7) gjysh → djish
+  t = t.replace(/\bgjy/g, "dji").replace(/\bGjy/g, "Dji");
+
+  // 8) mirë → mir
+  t = t.replace(/\bmir[eë]\b/g, "mir").replace(/\bMir[eë]\b/g, "Mir");
+
+  // 9) zezë → zez
+  t = t.replace(/\bzez[eë]\b/g, "zez").replace(/\bZez[eë]\b/g, "Zez");
+
+  // 10) vajzë → vajz
+  t = t.replace(/\bvajz[eë]\b/g, "vajz").replace(/\bVajz[eë]\b/g, "Vajz");
+
+  // 11) nënë → nen
+  t = t.replace(/\bn[eë]n[eë]\b/g, "nen").replace(/\bN[eë]n[eë]\b/g, "Nen");
+
+  // 12) tre → treh
+  t = t.replace(/\btre\b/g, "treh").replace(/\bTre\b/g, "Treh");
+
+  // 13) dja → dya
   t = t.replace(/\bdja/g, "dya").replace(/\bDja/g, "Dya");
 
-  // 6) një → nye (évite "nai")
+  // 14) një → nye
   t = t.replace(/\bnjë\b/g, "nye").replace(/\bNjë\b/g, "Nye");
 
-  // 7) ujë → ouy (évite "olaï")
+  // 15) ujë → ouy
   t = t.replace(/\buj\b/g, "ouy").replace(/\bUj\b/g, "Ouy");
 
-  // 8) tetë → tet (évite "ti")
+  // 16) tetë → tet
   t = t.replace(/\btet\b/g, "tet").replace(/\bTet\b/g, "Tet");
 
-  // 9) nëntë → nent (évite "ntéée")
+  // 17) nëntë → nent
   t = t.replace(/\bnent\b/g, "nent").replace(/\bNent\b/g, "Nent");
 
-  // 10) përshëndetje → pershendetye (évite "pershendetaj")
+  // 18) përshëndetje → pershendetye
   t = t.replace(/tje/g, "tye").replace(/Tje/g, "Tye");
 
-  // 11) bukë → book (évite "bjuk")
+  // 19) bukë → book
   t = t.replace(/\bbuk/g, "book").replace(/\bBuk/g, "Book");
 
-  // 12) gjy → djy (évite "daesh")
-  t = t.replace(/gjy/g, "djy").replace(/Gjy/g, "Djy");
-
-  // 13) jeshile → yeshilé (évite "jeshail")
+  // 20) jeshile → yeshilé
   t = t.replace(/ile\b/g, "ilé").replace(/Ile\b/g, "Ilé");
 
-  // 14) shq → shk (corrige shqip, shqipëri…)
+  // 21) shq → shk
   t = t.replace(/shq/g, "shk").replace(/Shq/g, "Shk");
 
-  // 15) Digrammes généraux
+  // 22) Digrammes généraux
   t = t.replace(/gj/g, "dji").replace(/Gj/g, "Dji");
   t = t.replace(/xh/g, "dj").replace(/Xh/g, "Dj");
   t = t.replace(/zh/g, "j").replace(/Zh/g, "J");
 
-  // 16) j → y
+  // 23) j → y
   t = t.replace(/j/g, "y").replace(/J/g, "Y");
 
-  // 17) q / ç → tch
+  // 24) q / ç → tch
   t = t.replace(/q/g, "tch").replace(/Q/g, "Tch");
   t = t.replace(/ç/g, "tch").replace(/Ç/g, "Tch");
 
-  // 18) ll / rr
+  // 25) ll / rr
   t = t.replace(/ll/g, "l").replace(/Ll/g, "L");
   t = t.replace(/rr/g, "r").replace(/Rr/g, "R");
 
-  // 19) dh → d
+  // 26) dh → d
   t = t.replace(/dh/g, "d").replace(/Dh/g, "D");
 
-  // 20) nj → ny (général)
+  // 27) nj → ny
   t = t.replace(/nj/g, "ny").replace(/Nj/g, "Ny");
 
-  // 21) ë interne → e
+  // 28) ë interne → e
   t = t.replace(/ë/g, "e").replace(/Ë/g, "E");
 
   return t;
@@ -838,6 +854,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
 
 
 
