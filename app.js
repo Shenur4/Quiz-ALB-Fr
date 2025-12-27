@@ -265,11 +265,9 @@ function getAnswer(dir, word) {
 }
 
 // ======================================================
-// VOIX INTELLIGENTES (PC = albanais, mobile = serbe)
+// VOIX INTELLIGENTES (PC = albanais, mobile = anglais)
 // + CORRECTIONS PHONÉTIQUES ALBANAIS
 // ======================================================
-
-// Détection plateforme
 function detectPlatform() {
   const ua = navigator.userAgent;
   return {
@@ -278,44 +276,38 @@ function detectPlatform() {
   };
 }
 
-// Choix de la langue de la voix pour la question
 function getVoiceLangPrompt(dir) {
   const { isWindows, isMobile } = detectPlatform();
 
-  // Si la langue source est l'albanais
   if (dir.startsWith("sq-")) {
-    if (isWindows) return "sq-AL";   // PC → vraie voix albanaise
-    if (isMobile) return "sr-RS";    // Mobile → voix serbe (bien meilleure)
+    if (isWindows) return "sq-AL";   // PC → albanais parfait
+    if (isMobile) return "en-US";    // Mobile → anglais (toujours installé)
   }
 
-  // Sinon, langue source normale
   switch (dir) {
     case "fr-sq": return "fr-FR";
     case "de-sq": return "de-DE";
     case "en-sq": return "en-US";
   }
 
-  return "sq-AL"; // fallback propre
+  return "sq-AL";
 }
 
-// Choix de la langue de la voix pour la réponse
 function getVoiceLangAnswer(dir) {
   const { isWindows, isMobile } = detectPlatform();
 
-  // Si la langue cible est l'albanais
   if (dir.endsWith("-sq")) {
-    if (isWindows) return "sq-AL";   // PC → vraie voix albanaise
-    if (isMobile) return "sr-RS";    // Mobile → voix serbe (bien meilleure)
+    if (isWindows) return "sq-AL";   // PC → albanais parfait
+    if (isMobile) return "en-US";    // Mobile → anglais (toujours installé)
   }
 
-  // Sinon, langue cible normale
   switch (dir) {
     case "sq-fr": return "fr-FR";
     case "sq-de": return "de-DE";
     case "sq-en": return "en-US";
   }
 
-  return "sq-AL"; // fallback propre
+  return "sq-AL";
 }
 
 // ======================================================
@@ -776,5 +768,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
 
 
