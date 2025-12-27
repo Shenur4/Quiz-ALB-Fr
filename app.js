@@ -265,7 +265,7 @@ function getAnswer(dir, word) {
 }
 
 // ======================================================
-// VOIX INTELLIGENTES (PC = albanais, mobile = turc)
+// VOIX INTELLIGENTES (PC = albanais, mobile = serbe)
 // ======================================================
 
 function detectPlatform() {
@@ -282,7 +282,7 @@ function getVoiceLangPrompt(dir) {
   // Si la langue source est l'albanais
   if (dir.startsWith("sq-")) {
     if (isWindows) return "sq-AL";   // PC → vraie voix albanaise
-    if (isMobile) return "tr-TR";    // Mobile → voix turque (bien meilleure)
+    if (isMobile) return "sr-RS";    // Mobile → voix serbe (bien meilleure)
   }
 
   // Sinon, langue source normale
@@ -301,7 +301,7 @@ function getVoiceLangAnswer(dir) {
   // Si la langue cible est l'albanais
   if (dir.endsWith("-sq")) {
     if (isWindows) return "sq-AL";   // PC → vraie voix albanaise
-    if (isMobile) return "tr-TR";    // Mobile → voix turque (bien meilleure)
+    if (isMobile) return "sr-RS";    // Mobile → voix serbe (bien meilleure)
   }
 
   // Sinon, langue cible normale
@@ -744,3 +744,4 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
