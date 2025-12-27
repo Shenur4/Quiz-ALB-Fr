@@ -266,7 +266,7 @@ function getAnswer(dir, word) {
 
 // ======================================================
 // VOIX INTELLIGENTES (PC = albanais, mobile = anglais)
-// + CORRECTIONS PHONÉTIQUES ALBANAIS (VERSION PREMIUM)
+// + CORRECTIONS PHONÉTIQUES ALBANAIS
 // ======================================================
 
 function detectPlatform() {
@@ -280,11 +280,13 @@ function detectPlatform() {
 function getVoiceLangPrompt(dir) {
   const { isWindows, isMobile } = detectPlatform();
 
+  // Si la langue source est l'albanais
   if (dir.startsWith("sq-")) {
-    if (isWindows) return "sq-AL";   // PC → albanais parfait
+    if (isWindows) return "sq-AL";   // PC → vraie voix albanaise
     if (isMobile) return "en-US";    // Mobile → anglais (toujours installé)
   }
 
+  // Sinon, langue source normale
   switch (dir) {
     case "fr-sq": return "fr-FR";
     case "de-sq": return "de-DE";
@@ -297,11 +299,13 @@ function getVoiceLangPrompt(dir) {
 function getVoiceLangAnswer(dir) {
   const { isWindows, isMobile } = detectPlatform();
 
+  // Si la langue cible est l'albanais
   if (dir.endsWith("-sq")) {
-    if (isWindows) return "sq-AL";   // PC → albanais parfait
+    if (isWindows) return "sq-AL";   // PC → vraie voix albanaise
     if (isMobile) return "en-US";    // Mobile → anglais (toujours installé)
   }
 
+  // Sinon, langue cible normale
   switch (dir) {
     case "sq-fr": return "fr-FR";
     case "sq-de": return "de-DE";
@@ -312,41 +316,28 @@ function getVoiceLangAnswer(dir) {
 }
 
 // ======================================================
-// CORRECTIONS PHONÉTIQUES POUR L'ALBANAIS (VERSION PREMIUM)
+// CORRECTIONS PHONÉTIQUES POUR L'ALBANAIS
+// (utilisées uniquement sur mobile, pas sur PC)
 // ======================================================
 function fixAlbanianPhonetics(text) {
   let t = text;
 
-  // 1. Digrammes (ordre critique)
+  // Digrammes (ordre important)
   t = t.replace(/gj/g, "dji");
   t = t.replace(/xh/g, "dj");
   t = t.replace(/zh/g, "j");
 
-  // 2. j → y (après digrammes)
+  // j → y (après les digrammes)
   t = t.replace(/j/g, "y");
 
-  // 3. Sons simples
+  // Sons simples
   t = t.replace(/q/g, "tch");
   t = t.replace(/ç/g, "tch");
   t = t.replace(/ll/g, "l");
   t = t.replace(/rr/g, "r");
 
-  // 4. ë → e (optionnel mais recommandé)
+  // Optionnel : ë → e
   t = t.replace(/ë/g, "e");
-
-  // 5. Accents toniques simulés (VERSION PREMIUM)
-  // On allonge légèrement les voyelles accentuées
-  t = t.replace(/á/g, "aa");
-  t = t.replace(/é/g, "ee");
-  t = t.replace(/í/g, "ii");
-  t = t.replace(/ó/g, "oo");
-  t = t.replace(/ú/g, "uu");
-
-  // 6. Accent tonique automatique (si pas d'accent écrit)
-  // On renforce la première syllabe des mots longs
-  t = t.replace(/\b([a-z]{3,})/gi, (m) => {
-    return m.replace(/^([aeiouy])/, "$1$1"); // double la première voyelle
-  });
 
   return t;
 }
@@ -355,15 +346,33 @@ function fixAlbanianPhonetics(text) {
 // Synthèse vocale améliorée
 // ======================================================
 function speak(text, lang) {
-  const processedText = lang.startsWith("sq")
-    ? fixAlbanianPhonetics(text)
-    : text;
+  const { isWindows, isMobile } = detectPlatform();
+  const isAlbanian = lang.startsWith("sq");
+
+  // Sur PC avec vraie voix albanaise → texte brut
+  // Sur mobile (anglais) → texte corrigé phonétiquement
+  const processedText =
+    isAlbanian && isMobile ? fixAlbanianPhonetics(text) : text;
 
   const utter = new SpeechSynthesisUtterance(processedText);
   const voices = speechSynthesis.getVoices();
 
-  utter.voice = voices.find(v => v.lang === lang) || null;
+  // Choix de la voix
+  let voice = voices.find(v => v.lang === lang);
 
+  // Si on demande sq-AL mais qu'il n'existe pas → fallback anglais
+  if (!voice && isAlbanian) {
+    voice = voices.find(v => v.lang.startsWith("en"));
+  }
+
+  // Fallback ultime : première voix dispo
+  if (!voice) {
+    voice = voices[0] || null;
+  }
+
+  utter.voice = voice;
+
+  // Ajustements pour améliorer la prononciation
   utter.rate = 0.9;
   utter.pitch = 1.0;
 
@@ -785,6 +794,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
 
 
 
