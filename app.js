@@ -266,8 +266,9 @@ function getAnswer(dir, word) {
 
 // ======================================================
 // VOIX INTELLIGENTES (PC = albanais, mobile = anglais)
-// + CORRECTIONS PHONÉTIQUES ALBANAIS
+// + CORRECTIONS PHONÉTIQUES ALBANAIS (VERSION PREMIUM)
 // ======================================================
+
 function detectPlatform() {
   const ua = navigator.userAgent;
   return {
@@ -311,24 +312,41 @@ function getVoiceLangAnswer(dir) {
 }
 
 // ======================================================
-// CORRECTIONS PHONÉTIQUES POUR L'ALBANAIS
+// CORRECTIONS PHONÉTIQUES POUR L'ALBANAIS (VERSION PREMIUM)
 // ======================================================
 function fixAlbanianPhonetics(text) {
   let t = text;
 
-  // Digrammes (ordre important)
+  // 1. Digrammes (ordre critique)
   t = t.replace(/gj/g, "dji");
   t = t.replace(/xh/g, "dj");
   t = t.replace(/zh/g, "j");
 
-  // Sons simples
+  // 2. j → y (après digrammes)
+  t = t.replace(/j/g, "y");
+
+  // 3. Sons simples
   t = t.replace(/q/g, "tch");
   t = t.replace(/ç/g, "tch");
   t = t.replace(/ll/g, "l");
   t = t.replace(/rr/g, "r");
 
-  // Optionnel : ë → e
+  // 4. ë → e (optionnel mais recommandé)
   t = t.replace(/ë/g, "e");
+
+  // 5. Accents toniques simulés (VERSION PREMIUM)
+  // On allonge légèrement les voyelles accentuées
+  t = t.replace(/á/g, "aa");
+  t = t.replace(/é/g, "ee");
+  t = t.replace(/í/g, "ii");
+  t = t.replace(/ó/g, "oo");
+  t = t.replace(/ú/g, "uu");
+
+  // 6. Accent tonique automatique (si pas d'accent écrit)
+  // On renforce la première syllabe des mots longs
+  t = t.replace(/\b([a-z]{3,})/gi, (m) => {
+    return m.replace(/^([aeiouy])/, "$1$1"); // double la première voyelle
+  });
 
   return t;
 }
@@ -337,16 +355,15 @@ function fixAlbanianPhonetics(text) {
 // Synthèse vocale améliorée
 // ======================================================
 function speak(text, lang) {
-  // Correction phonétique uniquement si on lit de l'albanais
-  const processedText = lang.startsWith("sq") ? fixAlbanianPhonetics(text) : text;
+  const processedText = lang.startsWith("sq")
+    ? fixAlbanianPhonetics(text)
+    : text;
 
   const utter = new SpeechSynthesisUtterance(processedText);
   const voices = speechSynthesis.getVoices();
 
-  // Choix intelligent de la voix
   utter.voice = voices.find(v => v.lang === lang) || null;
 
-  // Ajustements pour améliorer la prononciation
   utter.rate = 0.9;
   utter.pitch = 1.0;
 
@@ -768,6 +785,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================
 // FIN DU FICHIER app.js
 // ======================================================
+
 
 
 
